@@ -1,0 +1,22 @@
+{
+  "name": "simsot-server",
+  "version": "1.0.0",
+  "description": "simsot-OT project server module",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "github.com/remyrd/simsot-server"
+  },
+  "author": "Remy Rojas",
+  "license": "ISC",
+  "dependencies": {
+    "fs": "0.0.2",
+    "http": "0.0.0",
+    "ioredis": "^1.15.0",
+    "socket.io": "^1.4.5"
+  }
+}

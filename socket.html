@@ -1,0 +1,32 @@
+<html>
+  <head>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.js"></script>
+  </head>
+  <body>
+    <script>
+      var socket = io.connect();
+      socket.on('prout', function(data){
+      	console.log(data.prout);
+      });
+      socket.on('date', function(data){
+      	$('#date').text(data.date);
+      });
+      socket.on('player_data', function(data){
+      	$('#player_data').text(data);
+      });
+      $(document).ready(function(){
+      	$('#text').keypress(function(e){
+      		socket.emit('client_data', {
+      			'nom': $("#nom").val(),
+      			'letter': String.fromCharCode(e.charCode)
+      		});
+      	});
+      });
+    </script>
+    <div>Ton Nom</div>
+    <textarea id="nom"></textarea>
+    <div id="player_data"></div>
+    <textarea id="text"></textarea>
+  </body>
+</html>
