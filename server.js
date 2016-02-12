@@ -3,11 +3,15 @@ var url = require('url');
 var fs = require('fs');
 var io = require('socket.io');
 var Redis = require('ioredis');
+var mongoClient = require('mongodb').MongoClient();
+var assert = require('assert');
 
 //Redis client
 var sub = new Redis(process.env.REDISCLOUD_URL);
 var pub = new Redis(process.env.REDISCLOUD_URL);
 
+//Mongo
+var MONGOLAB_URI = "mongodb://heroku_htx2kbml:mj0trg516kd3c2q8r5fl7pqfu8@ds055945.mongolab.com:55945/heroku_htx2kbml";
 
 var server = http.createServer(function(request, response){
     var path = url.parse(request.url).pathname;
@@ -50,17 +54,127 @@ sub.subscribe('foo', function(channels, count){
 
 var listener = io.listen(server);
 listener.sockets.on('connection', function(socket){
-    //receive data
+    
     socket.emit('prout',{'prout':'hello prout'});
+    
     socket.on('client_data', function(data){
         console.log(data);
+        //Redis publish
         pub.publish('foo',data.nom+":"+data.letter);
     });
 
+    //Redis sub distribution
     sub.on('message', function(channel, message){
         if(channel=='foo'){
             console.log(message);
             socket.emit('player_data',message);    
         }
     });
+
+    socket.on('subscribe', function(data){
+        insertUser(data);
+    });
+
+    socket.on('connect_user', function(data){
+        check_authentification(data);
+    });
 });
+
+
+// MongodB 
+
+function insertUser(data) {
+
+    var can_insert = check_insert_user(data);
+    
+    if(can_insert==1){
+        mongoClient.connect('MONGOLAB_URI', function(err, db) {
+            assert.equal(null, err);
+            db.collection('User').insertOne({
+                    "pseudo" : data.pseudo,
+                    "password" : data.password
+                }, 
+                function(err, result) {
+                    assert.equal(err, null);
+                    console.log("Inserted USER ", data.pseudo);
+                    db.close();
+            });
+        });
+    }
+    else {
+        console.log("Check failed");
+    }
+  
+};
+
+// Check before insertion
+function check_insert_user(data) {
+    
+    var can_insert=0;
+    if(data.pseudo!= null && data.password != null && data.pseudo!= "" && data.password != ""){
+        if(findUser(data)==0){
+            can_insert=1;
+                // !!!!!!!!!!!!!!!!!!!!!!!!!!!! BUG SUR LA DETECTION DE DOUBLONS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        }
+    }
+    return can_insert;
+
+};
+
+function findUser(data) {
+    var found=0;
+    
+    mongoClient.connect('MONGOLAB_URI', function(err, db) {
+    assert.equal(null, err);
+    var cursor =db.collection('User').find( { "pseudo": data.pseudo } );
+    cursor.each(function(err, doc) {
+        assert.equal(err, null);
+        if (doc != null) {
+            console.log("Trouvé ",data.pseudo);
+            found=1;
+        }
+        if (found ==0) {
+            console.log("Pas Trouvé");
+        }
+        db.close();
+    });
+    });
+    return found;
+};
+
+
+
+function clearDB() {
+    console.log("Clearing");
+
+    mongoClient.connect('MONGOLAB_URI', function(err, db) {
+    assert.equal(null, err);
+        db.collection('User').remove();
+        console.log("Cleared !!!");
+        db.close();
+    });  
+};
+
+
+
+
+function check_authentification(data) {
+    var found=0;
+    
+    mongoClient.connect('MONGOLAB_URI', function(err, db) {
+    assert.equal(null, err);
+    var cursor =db.collection('User').find( { "pseudo": data.pseudo,"password" : data.password } );
+    cursor.each(function(err, doc) {
+        assert.equal(err, null);
+        if (doc != null) {
+            console.log("Trouvé");
+            found=1;
+        }
+        if (found ==0) {
+            console.log("Pas Trouvé");
+        }
+        db.close();
+    });
+    });
+  return found;
+};
