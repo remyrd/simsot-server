@@ -85,6 +85,8 @@ listener.sockets.on('connection', function(socket){
 
 function insertUser(data) {
 
+	console.log("Trying to insert ", data.pseudo, " with password ", data.password);
+
     var can_insert = check_insert_user(data);
     
     if(can_insert==1){
