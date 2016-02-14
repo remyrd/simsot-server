@@ -3,15 +3,28 @@ var url = require('url');
 var fs = require('fs');
 var io = require('socket.io');
 var Redis = require('ioredis');
-var mongoClient = require('mongodb').MongoClient();
+var mongoClient = require('mongodb').MongoClient;
 var assert = require('assert');
 
-//Redis client
-var sub = new Redis(process.env.REDISCLOUD_URL);
-var pub = new Redis(process.env.REDISCLOUD_URL);
+switch(process.argv[2]){
+    case "dev":
+        var sub = new Redis('192.168.99.100',6379);
+        var pub = new Redis('192.168.99.100',6379);
+        var MONGOLAB_URI = "mongodb://localhost:27017";
+        var port=8001;
+        console.log("development config");
+        break;
 
-//Mongo
-var MONGOLAB_URI = "mongodb://heroku_htx2kbml:mj0trg516kd3c2q8r5fl7pqfu8@ds055945.mongolab.com:55945/heroku_htx2kbml";
+    default:
+        var sub = new Redis(process.env.REDISCLOUD_URL);
+        var pub = new Redis(process.env.REDISCLOUD_URL);
+        var MONGOLAB_URI = "mongodb://heroku_htx2kbml:mj0trg516kd3c2q8r5fl7pqfu8@ds055945.mongolab.com:55945/heroku_htx2kbml";
+        var port = process.env.PORT;
+        console.log("heroku config");
+        break;
+}
+
+
 
 var server = http.createServer(function(request, response){
     var path = url.parse(request.url).pathname;
@@ -44,7 +57,7 @@ var server = http.createServer(function(request, response){
     }
 });
 
-server.listen(process.env.PORT);
+server.listen(port);
 sub.set('foo', '');
 sub.subscribe('foo', function(channels, count){
     //subscribed
@@ -88,7 +101,7 @@ function insertUser(data) {
     var can_insert = check_insert_user(data);
     
     if(can_insert==1){
-        mongoClient.connect('MONGOLAB_URI', function(err, db) {
+        mongoClient.connect(MONGOLAB_URI, function(err, db) {
             assert.equal(null, err);
             db.collection('User').insertOne({
                     "pseudo" : data.pseudo,
@@ -124,7 +137,7 @@ function check_insert_user(data) {
 function findUser(data) {
     var found=0;
     
-    mongoClient.connect('MONGOLAB_URI', function(err, db) {
+    mongoClient.connect(MONGOLAB_URI, function(err, db) {
     assert.equal(null, err);
     var cursor =db.collection('User').find( { "pseudo": data.pseudo } );
     cursor.each(function(err, doc) {
@@ -147,7 +160,7 @@ function findUser(data) {
 function clearDB() {
     console.log("Clearing");
 
-    mongoClient.connect('MONGOLAB_URI', function(err, db) {
+    mongoClient.connect(MONGOLAB_URI, function(err, db) {
     assert.equal(null, err);
         db.collection('User').remove();
         console.log("Cleared !!!");
@@ -161,7 +174,7 @@ function clearDB() {
 function check_authentification(data) {
     var found=0;
     
-    mongoClient.connect('MONGOLAB_URI', function(err, db) {
+    mongoClient.connect(MONGOLAB_URI, function(err, db) {
     assert.equal(null, err);
     var cursor =db.collection('User').find( { "pseudo": data.pseudo,"password" : data.password } );
     cursor.each(function(err, doc) {
