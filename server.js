@@ -71,7 +71,8 @@ listener.sockets.on('connection', function(socket){
         }
     });
 
-    socket.on('subscribe', function(data){
+    socket.on('subscribe', function(json){
+		var data = JSON.parse(json);
         insertUser(data);
     });
 
@@ -132,7 +133,7 @@ function findUser(data) {
     cursor.each(function(err, doc) {
         assert.equal(err, null);
         if (doc != null) {
-            console.log("Trouvé ",data.pseudo);
+            console.log("Trouvé ", data.pseudo);
             found=1;
         }
         if (found ==0) {
