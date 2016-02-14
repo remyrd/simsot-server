@@ -1,18 +1,21 @@
 var http = require("http");
 var url = require('url');
 var fs = require('fs');
+var connect = require('connect');
+var assert = require('assert');
+
 var io = require('socket.io');
 var Redis = require('ioredis');
 var mongoClient = require('mongodb').MongoClient();
-var assert = require('assert');
 
 //Redis client
 var sub = new Redis(process.env.REDISCLOUD_URL);
 var pub = new Redis(process.env.REDISCLOUD_URL);
 
 //Mongo
-var MONGOLAB_URI = "mongodb://heroku_htx2kbml:mj0trg516kd3c2q8r5fl7pqfu8@ds055945.mongolab.com:55945/heroku_htx2kbml";
+var MONGOLAB_URI = process.env.MONGOLAB_URI;
 
+// Serveur -  web
 var server = http.createServer(function(request, response){
     var path = url.parse(request.url).pathname;
 
@@ -44,13 +47,16 @@ var server = http.createServer(function(request, response){
     }
 });
 
-server.listen(process.env.PORT);
+// Serveur - listener
+var port = process.env.PORT || 3000;
+
+server.listen(port, function() {
+	console.log("Listening on " + port);
+});
 sub.set('foo', '');
 sub.subscribe('foo', function(channels, count){
     //subscribed
 });
-
-
 
 var listener = io.listen(server);
 listener.sockets.on('connection', function(socket){
@@ -89,7 +95,7 @@ listener.sockets.on('connection', function(socket){
 });
 
 
-// MongodB 
+// MongodB - subscribe
 
 function insertUser(data) {
 
@@ -157,8 +163,6 @@ function findUser(data) {
     return found;
 };
 
-
-
 function clearDB() {
     console.log("Clearing");
 
@@ -171,7 +175,7 @@ function clearDB() {
 };
 
 
-
+// MongodB - connect
 
 function check_authentification(data) {
     var found=0;
