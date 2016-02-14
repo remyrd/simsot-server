@@ -72,13 +72,13 @@ listener.sockets.on('connection', function(socket){
     });
 
     socket.on('subscribe', function(json){
-		console.log("subscribe called");
+		console.log("subscribe called with data", data);
 		var data = JSON.parse(json);
         insertUser(data);
     });
 
     socket.on('connect_user', function(data){
-		console.log("connect called");
+		console.log("connect called with data", data);
         check_authentification(data);
     });
 });
