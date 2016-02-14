@@ -119,9 +119,12 @@ function insertUser(data) {
 
 // Check before insertion
 function check_insert_user(data) {
+	console.log("Checkpoint 1");
     
     var can_insert=0;
+	
     if(data.pseudo!= null && data.password != null && data.pseudo!= "" && data.password != ""){
+		console.log("Checkpoint 2");
         if(findUser(data)==0){
             can_insert=1;
                 // !!!!!!!!!!!!!!!!!!!!!!!!!!!! BUG SUR LA DETECTION DE DOUBLONS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -132,6 +135,8 @@ function check_insert_user(data) {
 };
 
 function findUser(data) {
+	console.log("Checkpoint 3");
+	
     var found=0;
     
     mongoClient.connect('MONGOLAB_URI', function(err, db) {
