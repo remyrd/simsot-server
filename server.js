@@ -84,7 +84,7 @@ listener.sockets.on('connection', function(socket){
 	// En cas de problème
 	socket.on('error', function (err) { 
 		console.error(err.stack); 
-		socket.destroy(); // end/disconnect/close/destroy ?
+		//socket.destroy(); // end/disconnect/close/destroy ?
 	})
 });
 
