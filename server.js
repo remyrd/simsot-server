@@ -71,9 +71,8 @@ listener.sockets.on('connection', function(socket){
         }
     });
 
-    socket.on('subscribe', function(json){
+    socket.on('subscribe', function(data){
 		console.log("subscribe called with data", data);
-		var data = JSON.parse(json);
         insertUser(data);
     });
 
@@ -81,6 +80,12 @@ listener.sockets.on('connection', function(socket){
 		console.log("connect called with data", data);
         check_authentification(data);
     });
+	
+	// En cas de problème
+	socket.on('error', function (err) { 
+		console.error(err.stack); 
+		socket.close();
+	})
 });
 
 
@@ -167,19 +172,19 @@ function check_authentification(data) {
     var found=0;
     
     mongoClient.connect('MONGOLAB_URI', function(err, db) {
-    assert.equal(null, err);
-    var cursor =db.collection('User').find( { "pseudo": data.pseudo,"password" : data.password } );
-    cursor.each(function(err, doc) {
-        assert.equal(err, null);
-        if (doc != null) {
-            console.log("Trouvé");
-            found=1;
-        }
-        if (found ==0) {
-            console.log("Pas Trouvé");
-        }
-        db.close();
-    });
+		assert.equal(null, err);
+		var cursor =db.collection('User').find( { "pseudo": data.pseudo,"password" : data.password } );
+		cursor.each(function(err, doc) {
+			assert.equal(err, null);
+			if (doc != null) {
+				console.log("Trouvé");
+				found=1;
+			}
+			if (found ==0) {
+				console.log("Pas Trouvé");
+			}
+			db.close();
+		});
     });
   return found;
 };
