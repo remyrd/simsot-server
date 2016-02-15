@@ -18,7 +18,7 @@ switch(process.argv[2]){
     default:
         var sub = new Redis(process.env.REDISCLOUD_URL);
         var pub = new Redis(process.env.REDISCLOUD_URL);
-        var MONGOLAB_URI = "mongodb://heroku_htx2kbml:mj0trg516kd3c2q8r5fl7pqfu8@ds055945.mongolab.com:55945/heroku_htx2kbml";
+        var MONGOLAB_URI = process.env.MONGOLAB_URI;
         var port = process.env.PORT;
         console.log("heroku config");
         break;
@@ -49,6 +49,22 @@ var server = http.createServer(function(request, response){
                 }
             });
             break;
+
+        case '/mongo.html':
+            fs.readFile(__dirname + path, function(error, data){
+                if (error){
+                    response.writeHead(404);
+                    response.write("opps socket.html doesn't exist - 404");
+                    response.end();
+                }
+                else{
+                    response.writeHead(200, {"Content-Type": "text/html"});
+                    response.write(data, "utf8");
+                    response.end();
+                }
+            });
+            break;
+
         default:
             response.writeHead(404);
             response.write("opps this doesn't exist - 404");
@@ -108,9 +124,15 @@ function insertUser(data) {
                     "password" : data.password
                 }, 
                 function(err, result) {
-                    assert.equal(err, null);
-                    console.log("Inserted USER ", data.pseudo);
-                    db.close();
+                    try {
+                        assert.equal(err, null);
+                        console.log("Inserted USER !!!");
+                    }
+                    catch (e) { // non-standard
+                        console.log("Doublon présent !!!");
+                        console.log(e.name + ': ' + e.message);
+                    }
+                db.close();
             });
         });
     }
@@ -127,7 +149,10 @@ function check_insert_user(data) {
     if(data.pseudo!= null && data.password != null && data.pseudo!= "" && data.password != ""){
         if(findUser(data)==0){
             can_insert=1;
+            console.log("je peux inserer dans la base!");
                 // !!!!!!!!!!!!!!!!!!!!!!!!!!!! BUG SUR LA DETECTION DE DOUBLONS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        } else {
+            console.log("mieee pas inserer");
         }
     }
     return can_insert;
@@ -144,7 +169,7 @@ function findUser(data) {
         assert.equal(err, null);
         if (doc != null) {
             console.log("Trouvé ",data.pseudo);
-            found=1;
+            found = 1;
         }
         if (found ==0) {
             console.log("Pas Trouvé");
