@@ -102,7 +102,7 @@ listener.sockets.on('connection', function(socket){
 
     socket.on('subscribe', function(data){
         if(data.pseudo!= null && data.password != null && data.pseudo!= "" && data.password != ""){
-            insertUser(data);
+            insertUser(data,socket);
             emit_response_subscribe(socket,"Enregistré");
         }
         else {
@@ -112,17 +112,21 @@ listener.sockets.on('connection', function(socket){
 
 
     socket.on('connect_user', function(data){
-        check_authentification(data);
+        check_authentification(data,socket);
     });
 });
 
 function emit_response_subscribe(socket,message){
-        socket.emit('response_subscribe',message);    
-    };
+     socket.emit('response_subscribe',message);    
+};
+
+function emit_response_connect(socket,message){
+     socket.emit('response_connect',message);    
+};
 
 // MongodB 
 
-function insertUser(data) {
+function insertUser(data,socket) {
 
     //var can_insert = check_insert_user(data);
     
@@ -210,7 +214,7 @@ function clearDB() {
 
 
 
-function check_authentification(data) {
+function check_authentification(data,socket) {
     var found=0;
     
     mongoClient.connect(MONGOLAB_URI, function(err, db) {
@@ -221,9 +225,11 @@ function check_authentification(data) {
         if (doc != null) {
             console.log("Trouvé");
             found=1;
+            emit_response_connect(socket,"Connecté");
         }
         if (found ==0) {
             console.log("Pas Trouvé");
+            emit_response_connect(socket,"Authentification failed !");
         }
         db.close();
     });
