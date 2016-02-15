@@ -87,12 +87,10 @@ listener.sockets.on('connection', function(socket){
     });
 
     socket.on('subscribe', function(data){
-		console.log("subscribe called with data", data);
         insertUser(data);
     });
 
     socket.on('connect_user', function(data){
-		console.log("connect called with data", data);
         check_authentification(data);
     });
 	
@@ -145,6 +143,9 @@ function check_insert_user(data) {
                 // !!!!!!!!!!!!!!!!!!!!!!!!!!!! BUG SUR LA DETECTION DE DOUBLONS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         }
     }
+	
+	console.log("can_insert vaut ", can_insert);
+
     return can_insert;
 
 };
@@ -161,7 +162,7 @@ function findUser(data) {
 			assert.equal(err, null);
 			if (doc != null) {
 				console.log("Trouvé ", data.pseudo);
-				found=1;
+				found = 1;
 			}
 			if (found == 0) {
 				console.log("Pas Trouvé");
@@ -169,6 +170,8 @@ function findUser(data) {
 			db.close();
 		});
     });
+	
+	console.log("found vaut ", found);
     return found;
 };
 
@@ -187,6 +190,8 @@ function clearDB() {
 // MongodB - connect
 
 function check_authentification(data) {
+	console.log("Trying to connect ", data.pseudo, " with password ", data.password);
+	
     var found=0;
     
     mongo.connect(MONGOLAB_URI, function(err, db) {
