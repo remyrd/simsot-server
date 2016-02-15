@@ -87,7 +87,7 @@ listener.sockets.on('connection', function(socket){
     });
 
     socket.on('subscribe', function(data){
-        insertUser(data);
+        insertUser(data, check_insert_user(data));
     });
 
     socket.on('connect_user', function(data){
@@ -104,11 +104,11 @@ listener.sockets.on('connection', function(socket){
 
 // MongodB - subscribe
 
-function insertUser(data) {
+function insertUser(data, can_insert) {
 
 	console.log("Trying to insert ", data.pseudo, " with password ", data.password);
 
-    var can_insert = check_insert_user(data);
+    //var can_insert = check_insert_user(data);
     
     if(can_insert==1){
         mongo.connect(MONGOLAB_URI, function(err, db) {
