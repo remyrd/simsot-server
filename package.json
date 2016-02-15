@@ -9,17 +9,16 @@
   },
   "repository": {
     "type": "git",
-    "url": "github.com/Shweetz/simsot-server"
+    "url": "github.com/remyrd/simsot-server"
   },
   "author": "Remy Rojas",
   "license": "ISC",
   "dependencies": {
     "http": "0.0.0",
     "fs": "0.0.2",
-	"connect": "1.8.5",
     "assert": "^1.3.0",
     "socket.io": "^1.4.5",
     "ioredis": "^1.15.0",
-    "mongodb": "2.1.7"
+    "mongodb": "^2.1.7"
   }
 }
