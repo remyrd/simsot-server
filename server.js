@@ -101,22 +101,32 @@ listener.sockets.on('connection', function(socket){
     });
 
     socket.on('subscribe', function(data){
-        insertUser(data);
+        if(data.pseudo!= null && data.password != null && data.pseudo!= "" && data.password != ""){
+            insertUser(data);
+            emit_response_subscribe(socket,"Enregistré");
+        }
+        else {
+            emit_response_subscribe(socket,"Champ vide !");
+        }
     });
+
 
     socket.on('connect_user', function(data){
         check_authentification(data);
     });
 });
 
+function emit_response_subscribe(socket,message){
+        socket.emit('response_subscribe',message);    
+    };
 
 // MongodB 
 
 function insertUser(data) {
 
-    var can_insert = check_insert_user(data);
+    //var can_insert = check_insert_user(data);
     
-    if(can_insert==1){
+   // if(can_insert==1){
         mongoClient.connect(MONGOLAB_URI, function(err, db) {
             assert.equal(null, err);
             db.collection('User').insertOne({
@@ -131,16 +141,19 @@ function insertUser(data) {
                     catch (e) { // non-standard
                         console.log("Doublon présent !!!");
                         console.log(e.name + ': ' + e.message);
+                        emit_response_subscribe(socket,"Pseudo utilisé !");
                     }
                 db.close();
             });
         });
-    }
-    else {
-        console.log("Check failed");
-    }
+   // }
+   // else {
+   //     console.log("Check failed");
+   // }
   
 };
+
+/*
 
 // Check before insertion
 function check_insert_user(data) {
@@ -158,6 +171,7 @@ function check_insert_user(data) {
     return can_insert;
 
 };
+
 
 function findUser(data) {
     var found=0;
@@ -179,7 +193,7 @@ function findUser(data) {
     });
     return found;
 };
-
+*/
 
 
 function clearDB() {
