@@ -5,7 +5,7 @@ var assert = require('assert');
 
 var io = require('socket.io');
 var Redis = require('ioredis');
-var mongo = require('mongodb').MongoClient;
+var mongoClient = require('mongodb').MongoClient;
 
 // Switch environment variables local/heroku
 switch(process.argv[2]){
@@ -20,7 +20,7 @@ switch(process.argv[2]){
     default:
         var sub = new Redis(process.env.REDISCLOUD_URL);
         var pub = new Redis(process.env.REDISCLOUD_URL);
-        var MONGOLAB_URI = "mongodb://heroku_htx2kbml:mj0trg516kd3c2q8r5fl7pqfu8@ds055945.mongolab.com:55945/heroku_htx2kbml";
+        var MONGOLAB_URI = process.env.MONGOLAB_URI;
         var port = process.env.PORT;
         console.log("heroku config");
         break;
@@ -41,6 +41,20 @@ var server = http.createServer(function(request, response){
                 if (error){
                     response.writeHead(404);
                     response.write("opps socket.html doesn't exist - 404");
+                    response.end();
+                }
+                else{
+                    response.writeHead(200, {"Content-Type": "text/html"});
+                    response.write(data, "utf8");
+                    response.end();
+                }
+            });
+            break;
+		case '/mongo.html':
+            fs.readFile(__dirname + path, function(error, data){
+                if (error){
+                    response.writeHead(404);
+                    response.write("opps mongo.html doesn't exist - 404");
                     response.end();
                 }
                 else{
@@ -111,37 +125,42 @@ function insertUser(data) {
     var can_insert = check_insert_user(data);
     
     if(can_insert==1){
-        mongo.connect(MONGOLAB_URI, function(err, db) {
-            assert.equal(null, err);
-            db.collection('User').insertOne({
-                    "pseudo" : data.pseudo,
-                    "password" : data.password
-                }, 
-                function(err, result) {
-                    assert.equal(err, null);
-                    console.log("Inserted USER ", data.pseudo);
-                    db.close();
-            });
-        });
-    }
-    else {
-        console.log("Check failed");
-    }
-  
+		mongoClient.connect(MONGOLAB_URI, function(err, db) {
+			assert.equal(null, err);
+				db.collection('User').insertOne({
+					"pseudo" : data.pseudo,
+					"password" : data.password
+				}, 
+				function(err, result) {
+					try {
+						assert.equal(err, null);
+						console.log("Inserted USER !!!");
+					}
+					catch (e) { // non-standard
+						console.log("Doublon présent !!!");
+						console.log(e.name + ': ' + e.message);
+					}
+				db.close();
+			});
+		});
+	}
+	else {
+		console.log("Check failed");
+	}  
 };
 
 // Check before insertion
 function check_insert_user(data) {
-	console.log("Checkpoint 1");
-    
-    var can_insert=0;
+	var can_insert=0;
 	
     if(data.pseudo!= null && data.password != null && data.pseudo!= "" && data.password != ""){
-		console.log("Checkpoint 2");
-        if(findUser(data)==0){
+		if(findUser(data)==0){
             can_insert=1;
+			console.log("je peux inserer dans la base!");
                 // !!!!!!!!!!!!!!!!!!!!!!!!!!!! BUG SUR LA DETECTION DE DOUBLONS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        }
+        } else {
+            console.log("mieee pas inserer");
+		}
     }
 	
 	console.log("can_insert vaut ", can_insert);
@@ -151,11 +170,9 @@ function check_insert_user(data) {
 };
 
 function findUser(data) {
-	console.log("Checkpoint 3");
-	
-    var found = 0;
+	var found = 0;
     
-    mongo.connect(MONGOLAB_URI, function(err, db) {
+	mongoClient.connect(MONGOLAB_URI, function(err, db) {
 		assert.equal(null, err);
 		var cursor = db.collection('User').find( { "pseudo": data.pseudo } );
 		cursor.each(function(err, doc) {
@@ -169,21 +186,21 @@ function findUser(data) {
 			}
 			db.close();
 		});
-    });
+	});
 	
 	console.log("found vaut ", found);
-    return found;
+	return found;
 };
 
 function clearDB() {
     console.log("Clearing");
 
-    mongo.connect(MONGOLAB_URI, function(err, db) {
+	mongoClient.connect(MONGOLAB_URI, function(err, db) {
 		assert.equal(null, err);
 		db.collection('User').remove();
 		console.log("Cleared !!!");
 		db.close();
-    });  
+	});  
 };
 
 
@@ -194,7 +211,7 @@ function check_authentification(data) {
 	
     var found=0;
     
-    mongo.connect(MONGOLAB_URI, function(err, db) {
+	mongoClient.connect(MONGOLAB_URI, function(err, db) {
 		assert.equal(null, err);
 		var cursor =db.collection('User').find( { "pseudo": data.pseudo,"password" : data.password } );
 		cursor.each(function(err, doc) {
@@ -208,6 +225,6 @@ function check_authentification(data) {
 			}
 			db.close();
 		});
-    });
-  return found;
+	});
+	return found;
 };
