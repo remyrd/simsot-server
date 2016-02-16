@@ -1,9 +1,3 @@
-$.getScript("script_florian.js", function(){
-
-   alert("Script loaded but not necessarily executed.");
-
-});
-
 var http = require("http");
 var url = require('url');
 var fs = require('fs');
@@ -106,6 +100,10 @@ listener.sockets.on('connection', function(socket){
         }
     });
 
+    socket.on('new_room', function(data){
+        create_room(data);
+    });
+    
     socket.on('subscribe', function(data){
         insertUser(data);
     });
@@ -235,6 +233,39 @@ function check_authentification(data) {
 	return found;
 };
 
-test();
-test();
-test();
+
+function create_room(data){
+
+    console.log("Trying to insert ", data.room_name, " with host : ", data.host);
+
+        mongoClient.connect(MONGOLAB_URI, function(err, db) {
+            assert.equal(null, err);
+                db.collection('Room').insertOne({
+                    "room_name" : data.room_name,
+                    "room_password" : data.room_password,
+                    "host" : data.host,
+                    "list_players" : data.list_players,
+                    "list_ennemies" : data.list_ennemies,
+                    "number_players_max" : data.number_players_max,
+                    "number_ennemies_max" : data.number_ennemies_max,
+                    "GPS" : data.GPS,
+                    "distance_min" : data.distance_min
+                }, 
+                function(err, result) {
+                    try {
+                        assert.equal(err, null);
+                        console.log("Inserted Room !!!");
+                    }
+                    catch (e) { // non-standard
+                        console.log("Doublon présent !!!");
+                        console.log(e.name + ': ' + e.message);
+                    }
+                db.close();
+            });
+        });
+
+}
+
+function connect_room(data){
+
+}
