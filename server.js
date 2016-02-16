@@ -89,7 +89,7 @@ listener.sockets.on('connection', function(socket){
     socket.on('client_data', function(data){
         console.log(data);
         //Redis publish
-        pub.publish('foo',data.nom+":"+data.letter);
+        pub.publish('foo',data.name+":"+data.x+"-"+data.y);
     });
 
     //Redis sub distribution

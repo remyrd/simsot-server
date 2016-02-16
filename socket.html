@@ -16,10 +16,11 @@
 				$('#player_data').text(data);
 			});
 			$(document).ready(function(){
-				$('#text').keypress(function(e){
+				$('#sendPosition').click(function(e){
 					socket.emit('client_data', {
-						'nom': $("#nom").val(),
-						'letter': String.fromCharCode(e.charCode)
+						'name': $("#name").val(),
+						'x': $("#textX").val(),
+						'y': $("#textY").val()
 					});
 				});
 			});
@@ -28,7 +29,9 @@
 		<textarea id="player_data" placeholder="Il faut bouger PacMan!"></textarea>
 		</br>
 		<div>Envoyer des informations</div>
-		<textarea id="nom" placeholder="nom"></textarea>
-		<textarea id="text" placeholder="letter (writing here auto-sends)"></textarea>
+		<textarea id="name" placeholder="name"></textarea>
+		<textarea id="textX" placeholder="number"></textarea>
+		<textarea id="textY" placeholder="number"></textarea>
+		 <button type="button" id="sendPosition">Envoyer Position</button> 
 	</body>
 </html>
