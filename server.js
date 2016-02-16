@@ -101,11 +101,17 @@ listener.sockets.on('connection', function(socket){
     });
 
     socket.on('subscribe', function(data){
-        insertUser(data);
+        if(data.pseudo!= null && data.password != null && data.pseudo!= "" && data.password != ""){
+            insertUser(data,socket);   
+        }
+        else {
+            emit_response_subscribe(socket,"Champ vide !");
+        }
     });
 
+
     socket.on('connect_user', function(data){
-        check_authentification(data);
+        check_authentification(data,socket);
     });
 	
 	// En cas de problème
@@ -115,39 +121,49 @@ listener.sockets.on('connection', function(socket){
 	})
 });
 
+function emit_response_subscribe(socket,message){
+     socket.emit('response_subscribe',message);    
+};
+
+function emit_response_connect(socket,message){
+     socket.emit('response_connect',message);    
+};
 
 // MongodB - subscribe
 
-function insertUser(data) {
+function insertUser(data,socket) {
 
-	console.log("Trying to insert ", data.pseudo, " with password ", data.password);
-
-    var can_insert = check_insert_user(data);
-    
-    if(can_insert==1){
-		mongoClient.connect(MONGOLAB_URI, function(err, db) {
-			assert.equal(null, err);
-				db.collection('User').insertOne({
-					"pseudo" : data.pseudo,
-					"password" : data.password
-				}, 
-				function(err, result) {
-					try {
-						assert.equal(err, null);
-						console.log("Inserted USER !!!");
-					}
-					catch (e) { // non-standard
-						console.log("Doublon présent !!!");
-						console.log(e.name + ': ' + e.message);
-					}
-				db.close();
-			});
-		});
-	}
-	else {
-		console.log("Check failed");
-	}  
+<<<<<<< HEAD
+    //var can_insert = check_insert_user(data);
+    console.log("Trying to insert ", data.pseudo, " with password ", data.password);
+   // if(can_insert==1){
+        mongoClient.connect(MONGOLAB_URI, function(err, db) {
+            assert.equal(null, err);
+            db.collection('User').insertOne({
+                    "pseudo" : data.pseudo,
+                    "password" : data.password
+                }, 
+                function(err, result) {
+                    try {
+                        assert.equal(err, null);
+                        console.log("Inserted USER !!!");
+                        emit_response_subscribe(socket,"Enregistré");
+                    }
+                    catch (e) { // non-standard
+                        console.log("Doublon présent !!!");
+                        console.log(e.name + ': ' + e.message);
+                        emit_response_subscribe(socket,"Pseudo utilisé !");
+                    }
+                db.close();
+            });
+        });
+   // }
+   // else {
+   //     console.log("Check failed");
+   // }
 };
+
+/*
 
 // Check before insertion
 function check_insert_user(data) {
@@ -168,6 +184,7 @@ function check_insert_user(data) {
     return can_insert;
 
 };
+
 
 function findUser(data) {
 	var found = 0;
@@ -191,6 +208,8 @@ function findUser(data) {
 	console.log("found vaut ", found);
 	return found;
 };
+<<<<<<< HEAD
+*/
 
 function clearDB() {
     console.log("Clearing");
