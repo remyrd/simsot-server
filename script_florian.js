@@ -1,1 +1,6 @@
-console.log("!!!!!!! IMPORT REUSSI !!!!!");
+
+function test(){
+
+	console.log("!!!!!!! IMPORT REUSSI !!!!!");
+}
+
