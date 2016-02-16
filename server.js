@@ -122,11 +122,13 @@ listener.sockets.on('connection', function(socket){
 });
 
 function emit_response_subscribe(socket,message){
-     socket.emit('response_subscribe',message);    
+	socket.emit('response_subscribe',message);    
+	console.log("Message de type 'response_subscribe' envoyé : " + message);
 };
 
 function emit_response_connect(socket,message){
-     socket.emit('response_connect',message);    
+	socket.emit('response_connect',message);   
+	console.log("Message de type 'response_connect' envoyé : " + message); 
 };
 
 // MongodB - subscribe
@@ -236,9 +238,11 @@ function check_authentification(data) {
 			if (doc != null) {
 				console.log("Trouvé");
 				found=1;
+				emit_response_connect(socket,"Connecté");
 			}
 			if (found ==0) {
 				console.log("Pas Trouvé");
+				emit_response_connect(socket,"Authentification failed !");
 			}
 			db.close();
 		});
