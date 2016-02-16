@@ -225,7 +225,7 @@ function clearDB() {
 
 // MongodB - connect
 
-function check_authentification(data) {
+function check_authentification(data,socket) {
 	console.log("Trying to connect ", data.pseudo, " with password ", data.password);
 	
     var found=0;
