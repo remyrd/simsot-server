@@ -1,32 +1,37 @@
 <html>
-  <head>
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.js"></script>
-  </head>
-  <body>
-    <script>
-      var socket = io.connect();
-      socket.on('prout', function(data){
-      	console.log(data.prout);
-      });
-      socket.on('date', function(data){
-      	$('#date').text(data.date);
-      });
-      socket.on('player_data', function(data){
-      	$('#player_data').text(data);
-      });
-      $(document).ready(function(){
-      	$('#text').keypress(function(e){
-      		socket.emit('client_data', {
-      			'nom': $("#nom").val(),
-      			'letter': String.fromCharCode(e.charCode)
-      		});
-      	});
-      });
-    </script>
-    <div>Ton Nom</div>
-    <textarea id="nom"></textarea>
-    <div id="player_data"></div>
-    <textarea id="text"></textarea>
-  </body>
+	<head>
+		<script src="/socket.io/socket.io.js"></script>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.js"></script>
+	</head>
+	<body>
+		<script>
+			var socket = io.connect();
+			socket.on('prout', function(data){
+				console.log(data.prout);
+			});
+			socket.on('date', function(data){
+				$('#date').text(data.date);
+			});
+			socket.on('player_data', function(data){
+				$('#player_data').text(data);
+			});
+			$(document).ready(function(){
+				$('#sendPosition').click(function(e){
+					socket.emit('client_data', {
+						'name': $("#name").val(),
+						'x': $("#textX").val(),
+						'y': $("#textY").val()
+					});
+				});
+			});
+		</script>
+		<div>Coordonnees du joueur</div>
+		<textarea id="player_data" placeholder="Il faut bouger PacMan!" disabled></textarea>
+		</br>
+		<div>Envoyer des informations</div>
+		<textarea id="name" placeholder="name"></textarea>
+		<textarea id="textX" placeholder="number"></textarea>
+		<textarea id="textY" placeholder="number"></textarea>
+		 <button type="button" id="sendPosition">Envoyer Position</button> 
+	</body>
 </html>
