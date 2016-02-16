@@ -102,8 +102,7 @@ listener.sockets.on('connection', function(socket){
 
     socket.on('subscribe', function(data){
         if(data.pseudo!= null && data.password != null && data.pseudo!= "" && data.password != ""){
-            insertUser(data,socket);
-            emit_response_subscribe(socket,"Enregistré");
+            insertUser(data,socket);   
         }
         else {
             emit_response_subscribe(socket,"Champ vide !");
@@ -141,6 +140,7 @@ function insertUser(data,socket) {
                     try {
                         assert.equal(err, null);
                         console.log("Inserted USER !!!");
+                        emit_response_subscribe(socket,"Enregistré");
                     }
                     catch (e) { // non-standard
                         console.log("Doublon présent !!!");
