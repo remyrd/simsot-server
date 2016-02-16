@@ -1,4 +1,9 @@
-import * as lib from 'script_florian.js';
+$.getScript("script_florian.js", function(){
+
+   alert("Script loaded but not necessarily executed.");
+
+});
+
 var http = require("http");
 var url = require('url');
 var fs = require('fs');
