@@ -147,12 +147,12 @@ function insertUser(data,socket) {
                     try {
                         assert.equal(err, null);
                         console.log("Inserted USER !!!");
-                        emit_response_subscribe(socket,"Enregistré");
+                        emit_response_subscribe(socket,"Registered");
                     }
                     catch (e) { // non-standard
-                        console.log("Doublon présent !!!");
+                        console.log("Doublon found !!!");
                         console.log(e.name + ': ' + e.message);
-                        emit_response_subscribe(socket,"Pseudo utilisé !");
+                        emit_response_subscribe(socket,"Already used login !");
                     }
                 db.close();
             });
@@ -236,12 +236,12 @@ function check_authentification(data) {
 		cursor.each(function(err, doc) {
 			assert.equal(err, null);
 			if (doc != null) {
-				console.log("Trouvé");
+				console.log("Found : " + data.pseudo);
 				found=1;
-				emit_response_connect(socket,"Connecté");
+				emit_response_connect(socket,"Connected");
 			}
 			if (found ==0) {
-				console.log("Pas Trouvé");
+				console.log("Not found");
 				emit_response_connect(socket,"Authentification failed !");
 			}
 			db.close();
