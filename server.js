@@ -132,8 +132,6 @@ function emit_response_connect(socket,message){
 // MongodB - subscribe
 
 function insertUser(data,socket) {
-
-<<<<<<< HEAD
     //var can_insert = check_insert_user(data);
     console.log("Trying to insert ", data.pseudo, " with password ", data.password);
    // if(can_insert==1){
