@@ -113,6 +113,10 @@ listener.sockets.on('connection', function(socket){
     socket.on('connect_user', function(data){
         check_authentification(data,socket);
     });
+
+    socket.on('new_room', function(data){
+        create_room(data);
+    });
 	
 	// En cas de problème
 	socket.on('error', function (err) { 
@@ -249,3 +253,39 @@ function check_authentification(data,socket) {
 	});
 	return found;
 };
+
+function create_room(data){
+
+    console.log("Trying to insert ", data.room_name, " with host : ", data.host);
+
+        mongoClient.connect(MONGOLAB_URI, function(err, db) {
+            assert.equal(null, err);
+                db.collection('Room').insertOne({
+                    "room_name" : data.room_name,
+                    "room_password" : data.room_password,
+                    "host" : data.host,
+                    "list_players" : data.list_players,
+                    "list_ennemies" : data.list_ennemies,
+                    "number_players_max" : data.number_players_max,
+                    "number_ennemies_max" : data.number_ennemies_max,
+                    "GPS" : data.GPS,
+                    "distance_min" : data.distance_min
+                }, 
+                function(err, result) {
+                    try {
+                        assert.equal(err, null);
+                        console.log("Inserted Room !!!");
+                    }
+                    catch (e) { // non-standard
+                        console.log("Doublon présent !!!");
+                        console.log(e.name + ': ' + e.message);
+                    }
+                db.close();
+            });
+        });
+
+}
+
+function connect_room(data){
+
+}
