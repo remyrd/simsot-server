@@ -9,23 +9,47 @@
 			socket.on('prout', function(data){
 				console.log(data.prout);
 			});
+      
+      socket.on('add_room', function(room){
+        var opt = document.createElement('option');
+        opt.value = room;
+        opt.innerHTML = room;
+        document.getElementById("rooms").appendChild(opt);
+      });
+
 			socket.on('date', function(data){
 				$('#date').text(data.date);
 			});
-			socket.on('player_data', function(data){
+			
+      socket.on('player_data', function(data){
 				$('#player_data').text(data);
 			});
-			$(document).ready(function(){
+			
+      $(document).ready(function(){
 				$('#sendPosition').click(function(e){
 					socket.emit('client_data', {
+            'room':$("#room").val(),
 						'name': $("#name").val(),
 						'x': $("#textX").val(),
 						'y': $("#textY").val()
 					});
 				});
+        
+        $('#subscribeButton').click(function(e){
+          socket.emit('join',$("#room").val());
+        });
+        
+        $('#unsubscribeButton').click(function(e){
+          socket.emit('leave',$("#room").val());
+        });
 			});
 		</script>
 		<div>Coordonnees du joueur</div>
+    <select id="rooms">
+    </select>
+    <textarea id="room" placeholder="New Room Name"></textarea>
+    <button type="button" id="subscribeButton">Join</button>
+    <button type="button" id="unsubscribeButton">Leave</button><br>
 		<textarea id="player_data" placeholder="Il faut bouger PacMan!" disabled></textarea>
 		</br>
 		<div>Envoyer des informations</div>

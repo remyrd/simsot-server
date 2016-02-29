@@ -86,19 +86,29 @@ listener.sockets.on('connection', function(socket){
     
     socket.emit('prout',{'prout':'hello prout'});
     
+    socket.on('join', function(room_name){
+      socket.join(room_name);
+      console.log("joined ",room_name);
+      socket.emit('add_room',room_name);
+    });
+    
+    socket.on('leave',function(room_name){
+      socket.leave(room_name);
+      console.log("left ",room_name);
+    });
+
     socket.on('client_data', function(data){
         console.log(data);
-        //Redis publish
-        pub.publish('foo',data.name+":"+data.x+"-"+data.y);
+        listener.sockets.in(data.room).emit('player_data',JSON.stringify(data));
     });
 
     //Redis sub distribution
-    sub.on('message', function(channel, message){
+    /*sub.on('message', function(channel, message){
         if(channel=='foo'){
             console.log(message);
             socket.emit('player_data',message);    
         }
-    });
+    });*/
 
     socket.on('subscribe', function(data){
         if(data.pseudo!= null && data.password != null && data.pseudo!= "" && data.password != ""){
@@ -138,82 +148,28 @@ function emit_response_connect(socket,message){
 // MongodB - subscribe
 
 function insertUser(data,socket) {
-    //var can_insert = check_insert_user(data);
     console.log("Trying to insert ", data.pseudo, " with password ", data.password);
-   // if(can_insert==1){
-        mongoClient.connect(MONGOLAB_URI, function(err, db) {
-            assert.equal(null, err);
-            db.collection('User').insertOne({
-                    "pseudo" : data.pseudo,
-                    "password" : data.password
-                }, 
-                function(err, result) {
-                    try {
-                        assert.equal(err, null);
-                        console.log("Inserted USER !!!");
-                        emit_response_subscribe(socket,"Registered");
-                    }
-                    catch (e) { // non-standard
-                        console.log("Doublon found !!!");
-                        console.log(e.name + ': ' + e.message);
-                        emit_response_subscribe(socket,"Already used login !");
-                    }
-                db.close();
-            });
+    mongoClient.connect(MONGOLAB_URI, function(err, db) {
+        assert.equal(null, err);
+        db.collection('User').insertOne({
+                "pseudo" : data.pseudo,
+                "password" : data.password
+            }, 
+            function(err, result) {
+                try {
+                    assert.equal(err, null);
+                    console.log("Inserted USER !!!");
+                    emit_response_subscribe(socket,"Registered");
+                }
+                catch (e) { // non-standard
+                    console.log("Doublon found !!!");
+                    console.log(e.name + ': ' + e.message);
+                    emit_response_subscribe(socket,"Already used login !");
+                }
+            db.close();
         });
-   // }
-   // else {
-   //     console.log("Check failed");
-   // }
+    });
 };
-
-/*
-
-// Check before insertion
-function check_insert_user(data) {
-	var can_insert=0;
-	
-    if(data.pseudo!= null && data.password != null && data.pseudo!= "" && data.password != ""){
-		if(findUser(data)==0){
-            can_insert=1;
-			console.log("je peux inserer dans la base!");
-                // !!!!!!!!!!!!!!!!!!!!!!!!!!!! BUG SUR LA DETECTION DE DOUBLONS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        } else {
-            console.log("mieee pas inserer");
-		}
-    }
-	
-	console.log("can_insert vaut ", can_insert);
-
-    return can_insert;
-
-};
-
-
-function findUser(data) {
-	var found = 0;
-    
-	mongoClient.connect(MONGOLAB_URI, function(err, db) {
-		assert.equal(null, err);
-		var cursor = db.collection('User').find( { "pseudo": data.pseudo } );
-		cursor.each(function(err, doc) {
-			assert.equal(err, null);
-			if (doc != null) {
-				console.log("Trouvé ", data.pseudo);
-				found = 1;
-			}
-			if (found == 0) {
-				console.log("Pas Trouvé");
-			}
-			db.close();
-		});
-	});
-	
-	console.log("found vaut ", found);
-	return found;
-};
-<<<<<<< HEAD
-*/
 
 function clearDB() {
     console.log("Clearing");
@@ -256,33 +212,37 @@ function check_authentification(data,socket) {
 
 function create_room(data){
 
-    console.log("Trying to insert ", data.room_name, " with host : ", data.host);
+  console.log("Trying to insert ", data.room_name, " with host : ", data.host);
 
-        mongoClient.connect(MONGOLAB_URI, function(err, db) {
-            assert.equal(null, err);
-                db.collection('Room').insertOne({
-                    "room_name" : data.room_name,
-                    "room_password" : data.room_password,
-                    "host" : data.host,
-                    "list_players" : data.list_players,
-                    "list_ennemies" : data.list_ennemies,
-                    "number_players_max" : data.number_players_max,
-                    "number_ennemies_max" : data.number_ennemies_max,
-                    "GPS" : data.GPS,
-                    "distance_min" : data.distance_min
-                }, 
-                function(err, result) {
-                    try {
-                        assert.equal(err, null);
-                        console.log("Inserted Room !!!");
-                    }
-                    catch (e) { // non-standard
-                        console.log("Doublon présent !!!");
-                        console.log(e.name + ': ' + e.message);
-                    }
-                db.close();
-            });
-        });
+      mongoClient.connect(MONGOLAB_URI, function(err, db) {
+          assert.equal(null, err);
+              db.collection('Room').insertOne({
+                  "room_name" : data.room_name,
+                  "room_password" : data.room_password,
+                  "host" : data.host,
+                  "list_players" : data.list_players,
+                  "list_ennemies" : data.list_ennemies,
+                  "number_players_max" : data.number_players_max,
+                  "number_ennemies_max" : data.number_ennemies_max,
+                  "GPS" : data.GPS,
+                  "distance_min" : data.distance_min
+              }, 
+              function(err, result) {
+                  try {
+                      assert.equal(err, null);
+                      console.log("Inserted Room !!!");
+                  }
+                  catch (e) { // non-standard
+                      console.log("Doublon présent !!!");
+                      console.log(e.name + ': ' + e.message);
+                  }
+              db.close();
+          });
+      });
+      sub.set(data.room_name, '');
+      sub.subscribe(data.room_name, function(channels, count){
+        //subscribed to new room
+      });
 
 }
 
