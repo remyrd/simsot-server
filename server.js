@@ -139,9 +139,9 @@ function emit_list_room(socket){
     console.log("Trying to get the rooms");
     mongoClient.connect(MONGOLAB_URI, function(err, db) {
         assert.equal(null, err);
-        var data = db.collection('Room').find();
-        console.log("Trying to get the rooms names");
-        console.log(data.room_name);
+        var data = db.collection('Room').find().limit(10);
+        //console.log("Trying to get the rooms names");
+        //console.log(data.room_name);
         socket.emit('list_room',data);
         console.log("Rooms Data sent");
         db.close();
