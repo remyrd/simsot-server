@@ -118,6 +118,11 @@ listener.sockets.on('connection', function(socket){
         create_room(data);
     });
 	
+    socket.on('get_list_room', function(data){
+        // to do : a prendre en parametre la pos gps et renvoyer les rooms trié par distances
+        emit_list_room(socket);
+    });
+
 	// En cas de problème
 	socket.on('error', function (err) { 
 		console.error(err.stack); 
@@ -129,6 +134,16 @@ function emit_response_subscribe(socket,message){
 	socket.emit('response_subscribe',message);    
 	console.log("Message de type 'response_subscribe' envoyé : " + message);
 };
+
+function emit_list_room(socket){
+    mongoClient.connect(MONGOLAB_URI, function(err, db) {
+            assert.equal(null, err);
+            data = db.room.find().limit(10).sort( { room_name: 1 } );
+            socket.emit('list_room',data);
+            console.log("Rooms Data sent");
+            db.close();
+            });
+}
 
 function emit_response_connect(socket,message){
 	socket.emit('response_connect',message);   
