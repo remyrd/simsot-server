@@ -273,6 +273,7 @@ function create_room(data){
                 }, 
                 function(err, result) {
                     try {
+                        console.log("room_name : " + data.room_name +" host : " + data.host);
                         assert.equal(err, null);
                         console.log("Inserted Room !!!");
                     }
