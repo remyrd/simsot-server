@@ -127,7 +127,7 @@ listener.sockets.on('connection', function(socket){
 	socket.on('error', function (err) { 
 		console.error(err.stack); 
 		//socket.destroy(); // end/disconnect/close/destroy ?
-	})
+	});
 
     /*** User creates/joins room ***/
     socket.on('join', function(data){
@@ -194,7 +194,7 @@ function emit_response_connect(socket,message){
 
 function insertUser(data,socket) {
     //var can_insert = check_insert_user(data);
-    console.log("Trying to insert ", data.pseudo, " with password ", data.password);
+    console.log("Trying to insert", data.pseudo, " with password ", data.password);
    // if(can_insert==1){
         mongoClient.connect(MONGOLAB_URI, function(err, db) {
             assert.equal(null, err);
