@@ -168,10 +168,10 @@ function emit_list_room(socket){
             assert.equal(err, null);
             if (doc != null) {
                 data.push({
-                    "host" : data.host,
-                    "room_name" : data.room_name,
-                    "slot_empty" : data.slot_empty,
-                    "GPS" : data.GPS
+                    "host" : doc.host,
+                    "room_name" : doc.room_name,
+                    "slot_empty" : doc.slot_empty,
+                    "GPS" : doc.GPS
                 });
                 i++;
             }
