@@ -131,7 +131,7 @@ listener.sockets.on('connection', function(socket){
 
     /*** User creates/joins room ***/
     socket.on('join', function(data){
-        socket.join(sata.room_name); //subscribe to the pub sub
+        socket.join(data.room_name); //subscribe to the pub sub
         console.log("joined ",data.room_name);
 
         join_room(data);
