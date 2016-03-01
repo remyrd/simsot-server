@@ -139,11 +139,16 @@ function emit_list_room(socket){
     console.log("Trying to get the rooms");
     mongoClient.connect(MONGOLAB_URI, function(err, db) {
         assert.equal(null, err);
-        var data = db.collection('Room').find().limit(10);
+		var cursor = collectionref.find();
+		cursor.toArray(function(err, docs) {
+			socket.emit('list_room', docs);
+			console.log("Rooms Data sent");
+			console.log(docs);
+		});
+        //var data = db.collection('Room').find().limit(10);
         //console.log("Trying to get the rooms names");
-        //console.log(data.room_name);
-        socket.emit('list_room',data);
-        console.log("Rooms Data sent");
+        console.log("leave emi_list_room");
+        
         db.close();
     });
 }
