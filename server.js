@@ -128,6 +128,27 @@ listener.sockets.on('connection', function(socket){
 		console.error(err.stack); 
 		//socket.destroy(); // end/disconnect/close/destroy ?
 	})
+
+    /*** User creates/joins room ***/
+    socket.on('join', function(data){
+        socket.join(sata.room_name); //subscribe to the pub sub
+        console.log("joined ",data.room_name);
+
+        join_room(data);
+    });
+        
+    /*** User leaves room ***/
+    socket.on('leave',function(room_name){
+        socket.leave(room_name);
+        console.log("left ",room_name);
+    //!!MONGO LEAVE ROOM
+    });
+    ​
+    /*** User data distribution on the room ***/
+    socket.on('client_data', function(data){
+        console.log(data);
+        listener.sockets.in(data.room).emit('player_data',JSON.stringify(data));
+    });
 });
 
 function emit_response_subscribe(socket,message){
@@ -136,6 +157,8 @@ function emit_response_subscribe(socket,message){
 };
 
 function emit_list_room(socket){
+    // to do : ne pas envoyer le password
+    // to do : envoyer le nombre de joueurs connecté à la room
     console.log("Trying to get the rooms");
     mongoClient.connect(MONGOLAB_URI, function(err, db) {
         assert.equal(null, err);
@@ -145,7 +168,12 @@ function emit_list_room(socket){
         cursor.each(function(err, doc) {
             assert.equal(err, null);
             if (doc != null) {
-                data[i] = doc;
+                data.push({
+                    "host" : data.host,
+                    "room_name" : data.room_name,
+                    "slot_empty" : data.slot_empty,
+                    "GPS" : data.GPS
+                });
                 i++;
             }
             socket.emit('list_room',data);
@@ -292,11 +320,12 @@ function create_room(data){
                     "room_password" : data.room_password,
                     "host" : data.host,
                     "list_players" : data.list_players,
-                    "list_ennemies" : data.list_ennemies,
+                    "list_enemies" : data.list_enemies,
                     "number_players_max" : data.number_players_max,
-                    "number_ennemies_max" : data.number_ennemies_max,
+                    "number_enemies_max" : data.number_enemies_max,
                     "GPS" : data.GPS,
-                    "distance_min" : data.distance_min
+                    "distance_min" : data.distance_min,
+                    "slot_empty" : data.number_players_max -1
                 }, 
                 function(err, result) {
                     try {
@@ -314,6 +343,42 @@ function create_room(data){
 
 }
 
-function connect_room(data){
+function join_room(data){
+//To do : Add socket for response
 
+var found=false;
+
+mongoClient.connect(MONGOLAB_URI, function(err, db) {
+        assert.equal(null, err);
+        var cursor = db.collection('Room').find( { "room_name": data.room_name } );
+        cursor.each(function(err, doc) {
+            assert.equal(err, null);
+            if (doc != null) {
+                console.log("Trouvé ", data.room_name);
+                found = true;
+                if(doc.slot_empty>0){
+                    doc.list_players.push(data.player_name);
+                    doc.slot_empty --;
+                    db.inventory.update(
+                        { room_name: data.room_name },
+                        {
+                          $set: {
+                            list_players: doc.list_players,
+                            slot_empty: doc.slot_empty
+                          },
+                          $currentDate: { lastModified: true }
+                        }
+                    )
+                }
+
+                else(){
+                    console.log("Room full ");
+                }
+            }
+            if (found == false) {
+                console.log("Room not found ");
+            }
+            db.close();
+        });
+    });
 }
