@@ -141,9 +141,8 @@ listener.sockets.on('connection', function(socket){
     socket.on('leave',function(room_name){
         socket.leave(room_name);
         console.log("left ",room_name);
-    //!!MONGO LEAVE ROOM
     });
-    ​
+
     /*** User data distribution on the room ***/
     socket.on('client_data', function(data){
         console.log(data);
