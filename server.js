@@ -113,7 +113,16 @@ listener.sockets.on('connection', function(socket){
     socket.on('connect_user', function(data){
         check_authentification(data,socket);
     });
+
+    socket.on('new_room', function(data){
+        create_room(data);
+    });
 	
+    socket.on('get_list_room', function(data){
+        // to do : a prendre en parametre la pos gps et renvoyer les rooms trié par distances
+        emit_list_room(socket);
+    });
+
 	// En cas de problème
 	socket.on('error', function (err) { 
 		console.error(err.stack); 
@@ -125,6 +134,19 @@ function emit_response_subscribe(socket,message){
 	socket.emit('response_subscribe',message);    
 	console.log("Message de type 'response_subscribe' envoyé : " + message);
 };
+
+function emit_list_room(socket){
+    console.log("Trying to get the rooms");
+    mongoClient.connect(MONGOLAB_URI, function(err, db) {
+        assert.equal(null, err);
+        var data = db.collection('Room').find().limit(10);
+        //console.log("Trying to get the rooms names");
+        //console.log(data.room_name);
+        socket.emit('list_room',data);
+        console.log("Rooms Data sent");
+        db.close();
+    });
+}
 
 function emit_response_connect(socket,message){
 	socket.emit('response_connect',message);   
@@ -249,3 +271,40 @@ function check_authentification(data,socket) {
 	});
 	return found;
 };
+
+function create_room(data){
+
+    console.log("Trying to insert ", data.room_name, " with host : ", data.host);
+
+        mongoClient.connect(MONGOLAB_URI, function(err, db) {
+            assert.equal(null, err);
+                db.collection('Room').insertOne({
+                    "room_name" : data.room_name,
+                    "room_password" : data.room_password,
+                    "host" : data.host,
+                    "list_players" : data.list_players,
+                    "list_ennemies" : data.list_ennemies,
+                    "number_players_max" : data.number_players_max,
+                    "number_ennemies_max" : data.number_ennemies_max,
+                    "GPS" : data.GPS,
+                    "distance_min" : data.distance_min
+                }, 
+                function(err, result) {
+                    try {
+                        console.log("room_name : " + data.room_name +" host : " + data.host);
+                        assert.equal(err, null);
+                        console.log("Inserted Room !!!");
+                    }
+                    catch (e) { // non-standard
+                        console.log("Doublon présent !!!");
+                        console.log(e.name + ': ' + e.message);
+                    }
+                db.close();
+            });
+        });
+
+}
+
+function connect_room(data){
+
+}
