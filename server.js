@@ -13,7 +13,7 @@ switch(process.argv[2]){
         var sub = new Redis('192.168.99.100',6379);
         var pub = new Redis('192.168.99.100',6379);
         var MONGOLAB_URI = "mongodb://localhost:27017";
-        var port=8001;
+        var port = 8001;
         console.log("development config");
         break;
 
@@ -94,14 +94,14 @@ listener.sockets.on('connection', function(socket){
 
     //Redis sub distribution
     sub.on('message', function(channel, message){
-        if(channel=='foo'){
+        if(channel == 'foo'){
             console.log(message);
             socket.emit('player_data',message);    
         }
     });
 
     socket.on('subscribe', function(data){
-        if(data.pseudo!= null && data.password != null && data.pseudo!= "" && data.password != ""){
+        if(data.pseudo != null && data.password != null && data.pseudo != "" && data.password != ""){
             insertUser(data,socket);   
         }
         else {
@@ -119,7 +119,7 @@ listener.sockets.on('connection', function(socket){
     });
 	
     socket.on('get_list_room', function(data){
-        // to do : a prendre en parametre la pos gps et renvoyer les rooms trié par distances
+        // TODO : a prendre en parametre la pos gps et renvoyer les rooms trié par distances
         emit_list_room(socket);
     });
 
@@ -132,15 +132,15 @@ listener.sockets.on('connection', function(socket){
     /*** User creates/joins room ***/
     socket.on('join', function(data){
         socket.join(data.room_name); //subscribe to the pub sub
-        console.log("joined ",data.room_name);
+        console.log(data.player_name + " tries to join the room " + data.room_name);
 
-        join_room(data);
+        join_room(data,socket);
     });
         
     /*** User leaves room ***/
-    socket.on('leave',function(room_name){
-        socket.leave(room_name);
-        console.log("left ",room_name);
+    socket.on('leave',function(data){
+        socket.leave(data.room_name);
+        console.log(data.player_name + " left the room " + data.room_name);
     });
 
     /*** User data distribution on the room ***/
@@ -155,14 +155,19 @@ function emit_response_subscribe(socket,message){
 	console.log("Message de type 'response_subscribe' envoyé : " + message);
 };
 
+function emit_response_connect(socket,message){
+	socket.emit('response_connect',message);   
+	console.log("Message de type 'response_connect' envoyé : " + message); 
+};
+
 function emit_list_room(socket){
-    // to do : ne pas envoyer le password
-    // to do : envoyer le nombre de joueurs connecté à la room
+    // TODO : ne pas envoyer le password
+    // TODO : envoyer le nombre de joueurs connecté à la room
     console.log("Trying to get the rooms");
     mongoClient.connect(MONGOLAB_URI, function(err, db) {
         assert.equal(null, err);
         var data = [];
-        var i =0;
+        var i = 0;
         var cursor = db.collection('Room').find();
         cursor.each(function(err, doc) {
             assert.equal(err, null);
@@ -183,91 +188,32 @@ function emit_list_room(socket){
     });
 }
 
-function emit_response_connect(socket,message){
-	socket.emit('response_connect',message);   
-	console.log("Message de type 'response_connect' envoyé : " + message); 
-};
-
-
 // MongodB - subscribe
 
 function insertUser(data,socket) {
-    //var can_insert = check_insert_user(data);
     console.log("Trying to insert", data.pseudo, " with password ", data.password);
-   // if(can_insert==1){
-        mongoClient.connect(MONGOLAB_URI, function(err, db) {
-            assert.equal(null, err);
-            db.collection('User').insertOne({
-                    "pseudo" : data.pseudo,
-                    "password" : data.password
-                }, 
-                function(err, result) {
-                    try {
-                        assert.equal(err, null);
-                        console.log("Inserted USER !!!");
-                        emit_response_subscribe(socket,"Registered");
-                    }
-                    catch (e) { // non-standard
-                        console.log("Doublon found !!!");
-                        console.log(e.name + ': ' + e.message);
-                        emit_response_subscribe(socket,"Already used login !");
-                    }
-                db.close();
-            });
-        });
-   // }
-   // else {
-   //     console.log("Check failed");
-   // }
-};
-
-/*
-
-// Check before insertion
-function check_insert_user(data) {
-	var can_insert=0;
 	
-    if(data.pseudo!= null && data.password != null && data.pseudo!= "" && data.password != ""){
-		if(findUser(data)==0){
-            can_insert=1;
-			console.log("je peux inserer dans la base!");
-                // !!!!!!!!!!!!!!!!!!!!!!!!!!!! BUG SUR LA DETECTION DE DOUBLONS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        } else {
-            console.log("mieee pas inserer");
-		}
-    }
-	
-	console.log("can_insert vaut ", can_insert);
-
-    return can_insert;
-
-};
-
-
-function findUser(data) {
-	var found = 0;
-    
 	mongoClient.connect(MONGOLAB_URI, function(err, db) {
 		assert.equal(null, err);
-		var cursor = db.collection('User').find( { "pseudo": data.pseudo } );
-		cursor.each(function(err, doc) {
-			assert.equal(err, null);
-			if (doc != null) {
-				console.log("Trouvé ", data.pseudo);
-				found = 1;
-			}
-			if (found == 0) {
-				console.log("Pas Trouvé");
-			}
+		db.collection('User').insertOne({
+				"pseudo" : data.pseudo,
+				"password" : data.password
+			}, 
+			function(err, result) {
+				try {
+					assert.equal(err, null);
+					console.log("Inserted user " + data.pseudo);
+					emit_response_subscribe(socket,"Registered");
+				}
+				catch (e) { // non-standard
+					console.log("Already existing user " + data.pseudo);
+					console.log(e.name + ': ' + e.message);
+					emit_response_subscribe(socket,"Already used login !");
+				}
 			db.close();
 		});
 	});
-	
-	console.log("found vaut ", found);
-	return found;
 };
-<<<<<<< HEAD
-*/
 
 function clearDB() {
     console.log("Clearing");
@@ -280,13 +226,12 @@ function clearDB() {
 	});  
 };
 
-
 // MongodB - connect
 
 function check_authentification(data,socket) {
 	console.log("Trying to connect ", data.pseudo, " with password ", data.password);
 	
-    var found=0;
+    var found = 0;
     
 	mongoClient.connect(MONGOLAB_URI, function(err, db) {
 		assert.equal(null, err);
@@ -309,45 +254,44 @@ function check_authentification(data,socket) {
 };
 
 function create_room(data){
+    console.log("Trying to insert ", data.room_name, " with host ", data.host);
 
-    console.log("Trying to insert ", data.room_name, " with host : ", data.host);
-
-        mongoClient.connect(MONGOLAB_URI, function(err, db) {
-            assert.equal(null, err);
-                db.collection('Room').insertOne({
-                    "room_name" : data.room_name,
-                    "room_password" : data.room_password,
-                    "host" : data.host,
-                    "list_players" : data.list_players,
-                    "list_enemies" : data.list_enemies,
-                    "number_players_max" : data.number_players_max,
-                    "number_enemies_max" : data.number_enemies_max,
-                    "GPS" : data.GPS,
-                    "distance_min" : data.distance_min,
-                    "slot_empty" : data.number_players_max -1
-                }, 
-                function(err, result) {
-                    try {
-                        console.log("room_name : " + data.room_name +" host : " + data.host);
-                        assert.equal(err, null);
-                        console.log("Inserted Room !!!");
-                    }
-                    catch (e) { // non-standard
-                        console.log("Doublon présent !!!");
-                        console.log(e.name + ': ' + e.message);
-                    }
-                db.close();
-            });
-        });
+	mongoClient.connect(MONGOLAB_URI, function(err, db) {
+		assert.equal(null, err);
+			db.collection('Room').insertOne({
+				"room_name" : data.room_name,
+				"room_password" : data.room_password,
+				"host" : data.host,
+				"list_players" : data.list_players,
+				"list_enemies" : data.list_enemies,
+				"number_players_max" : data.number_players_max,
+				"number_enemies_max" : data.number_enemies_max,
+				"GPS" : data.GPS,
+				"distance_min" : data.distance_min,
+				"slot_empty" : data.number_players_max -1
+			}, 
+			function(err, result) {
+				try {
+					console.log("room_name : " + data.room_name + ", host : " + data.host);
+					assert.equal(err, null);
+					console.log("Inserted Room !!!");
+				}
+				catch (e) { // non-standard
+					console.log("Doublon présent !!!");
+					console.log(e.name + ': ' + e.message);
+				}
+			db.close();
+		});
+	});
 
 }
 
-function join_room(data){
-//To do : Add socket for response
+function join_room(data, socket){
+	//TODO : Add socket for response
 
-var found=false;
+	var found = false;
 
-mongoClient.connect(MONGOLAB_URI, function(err, db) {
+	mongoClient.connect(MONGOLAB_URI, function(err, db) {
         assert.equal(null, err);
         var cursor = db.collection('Room').find( { "room_name": data.room_name } );
         cursor.each(function(err, doc) {
@@ -355,9 +299,9 @@ mongoClient.connect(MONGOLAB_URI, function(err, db) {
             if (doc != null) {
                 console.log("Trouvé ", data.room_name);
                 found = true;
-                if(doc.slot_empty>0){
+                /*if(doc.slot_empty > 0){
                     doc.list_players.push(data.player_name);
-                    doc.slot_empty --;
+                    doc.slot_empty--;
                     db.inventory.update(
                         { room_name: data.room_name },
                         {
@@ -367,17 +311,19 @@ mongoClient.connect(MONGOLAB_URI, function(err, db) {
                           },
                           $currentDate: { lastModified: true }
                         }
-                    )
-                }
+                    )*/
+					console.log(data.player_name + " joined the room " + data.room_name + " successfully");
+					socket.emit('response_join', "Join successful");
+                /*}
 
                 else{
-                    console.log("Room full ");
-                }
+                    console.log("Room full.");
+                }*/
             }
             if (found == false) {
-                console.log("Room not found ");
+                console.log("Room not found.");
             }
-            db.close();
-        });
+			db.close();
+		});
     });
 }
