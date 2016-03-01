@@ -145,13 +145,12 @@ function emit_list_room(socket){
         cursor.each(function(err, doc) {
             assert.equal(err, null);
             if (doc != null) {
-                console.log("doc n°: ",i);
-                console.log(doc);
                 data[i] = doc;
                 i++;
             }
             socket.emit('list_room',data);
             console.log("Rooms sent");
+            console.log(data);
             db.close();
         });
     });
