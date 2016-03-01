@@ -370,7 +370,7 @@ mongoClient.connect(MONGOLAB_URI, function(err, db) {
                     )
                 }
 
-                else(){
+                else{
                     console.log("Room full ");
                 }
             }
