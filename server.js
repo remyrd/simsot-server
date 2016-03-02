@@ -160,11 +160,11 @@ function emit_list_room(socket){
                 });
                 i++;
             }
-            socket.emit('list_room',data);
-            console.log("Rooms sent");
-            console.log(data);
             db.close();
         });
+        socket.emit('list_room',data);
+        console.log("Rooms sent");
+        console.log(data);
     });
 }
 
