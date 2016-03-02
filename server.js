@@ -148,8 +148,9 @@ function emit_list_room(socket){
         assert.equal(null, err);
         var data = [];
         var i = 0;
+        var number_of_rooms = db.Rooms.count();
         var cursor = db.collection('Room').find();
-        cursor.each(function(err, doc) {
+        cursor.each( function(err, doc) {
             assert.equal(err, null);
             if (doc != null) {
                 data.push({
@@ -160,11 +161,13 @@ function emit_list_room(socket){
                 });
                 i++;
             }
+            if (i==number_of_rooms){
+                socket.emit('list_room',data);
+                console.log("Rooms sent");
+                console.log(data);
+            }
             db.close();
-        });
-        socket.emit('list_room',data);
-        console.log("Rooms sent");
-        console.log(data);
+        });   
     });
 }
 
