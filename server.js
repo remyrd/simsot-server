@@ -74,8 +74,6 @@ server.listen(port, function() {
 
 var listener = io.listen(server);
 listener.sockets.on('connection', function(socket){
-    
-    var players = [];
 
     socket.on('subscribe', function(data){
         if(data.pseudo != null && data.password != null && data.pseudo != "" && data.password != ""){
@@ -121,11 +119,7 @@ listener.sockets.on('connection', function(socket){
     /*** User data distribution on the room ***/
     socket.on('client_data', function(data){
         console.log(data);
-        players[data.pseudo] = {
-            "x": data.x,
-            "y": data.y
-        }
-        listener.sockets.in(data.room).emit('player_data',players);
+        listener.sockets.in(data.room).emit('player_data',data);
     });
 });
 
