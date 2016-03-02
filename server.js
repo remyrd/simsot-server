@@ -110,10 +110,11 @@ listener.sockets.on('connection', function(socket){
         join_room(data,socket);
     });
         
+        
     /*** User leaves room ***/
     socket.on('leave',function(data){
-        socket.leave(data.room_name);
         console.log(data.player_name + " left the room " + data.room_name);
+        leave_room(data,socket);
     });
 
     /*** User data distribution on the room ***/
@@ -297,6 +298,60 @@ function join_room(data, socket){
             else {
                 console.log("Room not found");
 				socket.emit('response_join', "Room not found");
+            }
+            db.close();
+        });
+    });
+}
+
+
+function delete_room(data, socket){
+    mongoClient.connect(MONGOLAB_URI, function(err, db) {
+        assert.equal(null, err);
+        console.log("Kicking players off the room");
+        listener.sockets.in(data.room).emit('kick');
+        listener.sockets.in(data.room).leave(data.room_name);
+        db.collection('Room').remove( { "room_name": data.room_name } );
+        db.close();
+        });
+}
+
+function leave_room(data, socket){
+    mongoClient.connect(MONGOLAB_URI, function(err, db) {
+        assert.equal(null, err);
+        var cursor = db.collection('Room').find( { "room_name": data.room_name } );
+        cursor.each(function(err, doc) {
+            assert.equal(err, null);
+            if (doc != null) {
+                console.log("Trouvé ", data.room_name);
+                if(doc.host==data.player_name){
+                    console.log("Host leaft the game");
+                    delete_room(data,socket);
+                }
+                else {
+                    var index = doc.list_players.indexOf(data.player_name);
+                    if (index > -1) {
+                        doc.list_players.splice(index, 1);
+                    }
+                    doc.slot_empty++;
+                    console.log('Nombre de slot vide :', doc.slot_empty);
+                    db.collection('Room').update(
+                        { "room_name": data.room_name },
+                        {
+                            $set: {
+                                "list_players": doc.list_players,
+                                "slot_empty": doc.slot_empty
+                            }                        
+                        });
+                    socket.emit('response_quit', "Successfully left the room");                
+                    console.log("Player list : " + doc.list_players);
+                    socket.emit('list_player', doc.list_players);
+                    socket.leave(data.room_name);
+                }
+            }
+            else {
+                console.log("Room not found");
+                socket.emit('response_quit', "Room not found");
             }
             db.close();
         });
