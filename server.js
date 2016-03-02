@@ -281,7 +281,7 @@ function join_room(data, socket){
                 console.log("Trouvé ", data.room_name);
                 found = true;
                 if(doc.slot_empty > 0){
-                    console.log('Nombre de slot vide :', data.slot_empty);
+                    console.log('Nombre de slot vide :', doc.slot_empty);
                     
                     doc.list_players.push(data.player_name);
                     doc.slot_empty--;
