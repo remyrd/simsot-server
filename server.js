@@ -121,7 +121,7 @@ listener.sockets.on('connection', function(socket){
     /*** User data distribution on the room ***/
     socket.on('client_data', function(data){
         console.log(data);
-        players.[data.pseudo] = {
+        players[data.pseudo] = {
             "x": data.x,
             "y": data.y
         }
