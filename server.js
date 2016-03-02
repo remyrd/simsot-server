@@ -115,7 +115,7 @@ listener.sockets.on('connection', function(socket){
     });
 
     socket.on('new_room', function(data){
-        create_room(data);
+        create_room(data,socket);
     });
 	
     socket.on('get_list_room', function(data){
@@ -253,7 +253,7 @@ function check_authentification(data,socket) {
 	return found;
 };
 
-function create_room(data){
+function create_room(data, socket){
     console.log("Trying to insert ", data.room_name, " with host ", data.host);
 
 	mongoClient.connect(MONGOLAB_URI, function(err, db) {
@@ -275,6 +275,7 @@ function create_room(data){
 					console.log("room_name : " + data.room_name + ", host : " + data.host);
 					assert.equal(err, null);
 					console.log("Inserted Room !!!");
+					socket.emit('response_create', "Create successful");
 				}
 				catch (e) { // non-standard
 					console.log("Doublon présent !!!");
