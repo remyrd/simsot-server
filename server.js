@@ -288,11 +288,11 @@ function create_room(data, socket){
 }
 
 function join_room(data, socket){
-	//TODO : Add socket for response
+    //TODO : Add socket for response
 
-	var found = false;
+    var found = false;
 
-	mongoClient.connect(MONGOLAB_URI, function(err, db) {
+    mongoClient.connect(MONGOLAB_URI, function(err, db) {
         assert.equal(null, err);
         var cursor = db.collection('Room').find( { "room_name": data.room_name } );
         cursor.each(function(err, doc) {
@@ -300,7 +300,9 @@ function join_room(data, socket){
             if (doc != null) {
                 console.log("Trouvé ", data.room_name);
                 found = true;
-                /*if(doc.slot_empty > 0){
+                if(doc.slot_empty > 0){
+                    socket.emit('Nombre de slot vide', data.slot_empty);
+                    
                     doc.list_players.push(data.player_name);
                     doc.slot_empty--;
                     db.inventory.update(
@@ -311,20 +313,20 @@ function join_room(data, socket){
                             slot_empty: doc.slot_empty
                           },
                           $currentDate: { lastModified: true }
-                        }
-                    )*/
-					console.log(data.player_name + " joined the room " + data.room_name + " successfully");
-					socket.emit('response_join', "Join successful");
-                /*}
+                        
+                    });
+                    console.log(data.player_name + " joined the room " + data.room_name + " successfully");
+                    socket.emit('response_join', "Join successful");
+                }
 
                 else{
                     console.log("Room full.");
-                }*/
+                }
             }
             if (found == false) {
                 console.log("Room not found.");
             }
-			db.close();
-		});
+            db.close();
+        });
     });
 }
