@@ -145,29 +145,29 @@ function emit_list_room(socket){
         assert.equal(null, err);
         var data = [];
         var i = 0;
-        var number_of_rooms = db.collection('Room').count();
-        var cursor = db.collection('Room').find();
-        cursor.each( function(err, doc) {
-            assert.equal(err, null);
-            i++;
-            if (doc != null) {
-                data.push({
-                    "host" : doc.host,
-                    "room_name" : doc.room_name,
-                    "slot_empty" : doc.slot_empty,
-                    "GPS" : doc.GPS
-                });
-                console.log("Room found " + doc.room_name);
-                
-            }
-			console.log("nb : " + number_of_rooms + ", i : " + i);
-            if (i==number_of_rooms){
-                socket.emit('list_room',data);
-                console.log("Rooms sent");
-                console.log(data);
-            }
-            db.close();
-        });   
+		db.collection('Room').count(function(err, count) {
+			var cursor = db.collection('Room').find();
+			cursor.each( function(err, doc) {
+				assert.equal(err, null);
+				i++;
+				if (doc != null) {
+					data.push({
+						"host" : doc.host,
+						"room_name" : doc.room_name,
+						"slot_empty" : doc.slot_empty,
+						"GPS" : doc.GPS
+					});
+					console.log("Room found " + doc.room_name);					
+				}
+				console.log("nb : " + count + ", i : " + i);
+				if (i==count){
+					socket.emit('list_room',data);
+					console.log("Rooms sent");
+					console.log(data);
+				}
+				db.close();
+			});   
+		});        
     });
 }
 
@@ -230,7 +230,6 @@ function check_authentification(data,socket) {
 			db.close();
 		});
 	});
-	return found;
 };
 
 function create_room(data, socket){
