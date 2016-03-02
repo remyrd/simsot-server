@@ -152,6 +152,7 @@ function emit_list_room(socket){
         var cursor = db.collection('Room').find();
         cursor.each( function(err, doc) {
             assert.equal(err, null);
+            i++;
             if (doc != null) {
                 data.push({
                     "host" : doc.host,
@@ -159,7 +160,7 @@ function emit_list_room(socket){
                     "slot_empty" : doc.slot_empty,
                     "GPS" : doc.GPS
                 });
-                i++;
+                
             }
             if (i==number_of_rooms){
                 socket.emit('list_room',data);
