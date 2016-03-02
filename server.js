@@ -249,7 +249,9 @@ function create_room(data, socket){
 					console.log("room_name : " + data.room_name + ", host : " + data.host);
 					assert.equal(err, null);
 					console.log("Inserted Room !!!");
-					socket.emit('response_create', "Create successful");
+					socket.emit('response_create', "Create successful");		
+                    console.log("Player list : " + doc.list_players);
+                    socket.emit('list_player', doc.list_players);
 				}
 				catch (e) { // non-standard
 					console.log("Doublon présent !!!");
