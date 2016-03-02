@@ -289,13 +289,14 @@ function join_room(data, socket){
                     console.log("Player list : " + doc.list_players);
                     socket.emit('list_player', doc.list_players);
                 }
-
-                else{
-                    console.log("Room full.");
+                else {
+                    console.log("Room full");
+					socket.emit('response_join', "Room full");
                 }
             }
             else {
-                console.log("Room not found.");
+                console.log("Room not found");
+				socket.emit('response_join', "Room not found");
             }
             db.close();
         });
