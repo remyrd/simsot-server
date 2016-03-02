@@ -148,7 +148,7 @@ function emit_list_room(socket){
         assert.equal(null, err);
         var data = [];
         var i = 0;
-        var number_of_rooms = db.Rooms.count();
+        var number_of_rooms = db.Room.count();
         var cursor = db.collection('Room').find();
         cursor.each( function(err, doc) {
             assert.equal(err, null);
