@@ -10,8 +10,6 @@ var mongoClient = require('mongodb').MongoClient;
 // Switch environment variables local/heroku
 switch(process.argv[2]){
     case "dev":
-        var sub = new Redis('192.168.99.100',6379);
-        var pub = new Redis('192.168.99.100',6379);
         var MONGOLAB_URI = "mongodb://localhost:27017";
         var port = 8001;
         console.log("development config");
@@ -76,29 +74,11 @@ var server = http.createServer(function(request, response){
 server.listen(port, function() {
 	console.log("Listening on " + port);
 });
-sub.set('foo', '');
-sub.subscribe('foo', function(channels, count){
-    //subscribed
-});
 
 var listener = io.listen(server);
 listener.sockets.on('connection', function(socket){
     
     socket.emit('prout',{'prout':'hello prout'});
-    
-    socket.on('client_data', function(data){
-        console.log(data);
-        //Redis publish
-        pub.publish('foo',data.name+":"+data.x+"-"+data.y);
-    });
-
-    //Redis sub distribution
-    sub.on('message', function(channel, message){
-        if(channel == 'foo'){
-            console.log(message);
-            socket.emit('player_data',message);    
-        }
-    });
 
     socket.on('subscribe', function(data){
         if(data.pseudo != null && data.password != null && data.pseudo != "" && data.password != ""){
