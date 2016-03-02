@@ -269,8 +269,6 @@ function create_room(data, socket){
 }
 
 function join_room(data, socket){
-    //TODO : Add socket for response
-
     var found = false;
 
     mongoClient.connect(MONGOLAB_URI, function(err, db) {
@@ -297,7 +295,9 @@ function join_room(data, socket){
                         
                     });
                     console.log(data.player_name + " joined the room " + data.room_name + " successfully");
-                    socket.emit('response_join', "Join successful");
+                    socket.emit('response_join', "Join successful");				
+                    console.log("Player list : " + doc.list_players);
+                    socket.emit('list_player', doc.list_players);
                 }
 
                 else{
