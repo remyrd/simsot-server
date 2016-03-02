@@ -163,8 +163,8 @@ function emit_list_room(socket){
                 
             }
             console.log(i);
-            console.log(number_of_rooms);
-            if (i==number_of_rooms){
+            console.log(number_of_rooms.promise);
+            if (i==number_of_rooms.promise){
                 socket.emit('list_room',data);
                 console.log("Rooms sent");
                 console.log(data);
