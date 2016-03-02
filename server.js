@@ -157,8 +157,10 @@ function emit_list_room(socket){
                     "slot_empty" : doc.slot_empty,
                     "GPS" : doc.GPS
                 });
+                console.log("Room found " + doc.room_name);
                 
             }
+			console.log("nb : " + number_of_rooms + ", i : " + i);
             if (i==number_of_rooms){
                 socket.emit('list_room',data);
                 console.log("Rooms sent");
@@ -211,8 +213,6 @@ function clearDB() {
 
 function check_authentification(data,socket) {
 	console.log("Trying to connect ", data.pseudo, " with password ", data.password);
-	
-    var found = 0;
     
 	mongoClient.connect(MONGOLAB_URI, function(err, db) {
 		assert.equal(null, err);
@@ -221,10 +221,9 @@ function check_authentification(data,socket) {
 			assert.equal(err, null);
 			if (doc != null) {
 				console.log("Found : " + data.pseudo);
-				found=1;
 				emit_response_connect(socket,"Connected");
 			}
-			if (found ==0) {
+			else {
 				console.log("Not found");
 				emit_response_connect(socket,"Authentification failed !");
 			}
@@ -269,8 +268,6 @@ function create_room(data, socket){
 }
 
 function join_room(data, socket){
-    var found = false;
-
     mongoClient.connect(MONGOLAB_URI, function(err, db) {
         assert.equal(null, err);
         var cursor = db.collection('Room').find( { "room_name": data.room_name } );
@@ -278,7 +275,6 @@ function join_room(data, socket){
             assert.equal(err, null);
             if (doc != null) {
                 console.log("Trouvé ", data.room_name);
-                found = true;
                 if(doc.slot_empty > 0){
                     console.log('Nombre de slot vide :', doc.slot_empty);
                     
@@ -304,7 +300,7 @@ function join_room(data, socket){
                     console.log("Room full.");
                 }
             }
-            if (found == false) {
+            else {
                 console.log("Room not found.");
             }
             db.close();
