@@ -75,7 +75,7 @@ server.listen(port, function() {
 var listener = io.listen(server);
 listener.sockets.on('connection', function(socket){
     
-    socket.emit('prout',{'prout':'hello prout'});
+    var players = {[]};
 
     socket.on('subscribe', function(data){
         if(data.pseudo != null && data.password != null && data.pseudo != "" && data.password != ""){
@@ -85,7 +85,6 @@ listener.sockets.on('connection', function(socket){
             emit_response_subscribe(socket,"Champ vide !");
         }
     });
-
 
     socket.on('connect_user', function(data){
         check_authentification(data,socket);
@@ -110,7 +109,6 @@ listener.sockets.on('connection', function(socket){
     socket.on('join', function(data){
         socket.join(data.room_name); //subscribe to the pub sub
         console.log(data.player_name + " tries to join the room " + data.room_name);
-
         join_room(data,socket);
     });
         
@@ -123,7 +121,11 @@ listener.sockets.on('connection', function(socket){
     /*** User data distribution on the room ***/
     socket.on('client_data', function(data){
         console.log(data);
-        listener.sockets.in(data.room).emit('player_data',JSON.stringify(data));
+        players.[data.pseudo] = {
+            "x": data.x,
+            "y": data.y
+        }
+        listener.sockets.in(data.room).emit('player_data',players);
     });
 });
 
