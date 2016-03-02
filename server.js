@@ -164,7 +164,7 @@ function emit_list_room(socket){
             }
             console.log(i);
             console.log(number_of_rooms);
-            if (cursor.hasNext()){
+            if (!(cursor.hasNext())){
                 socket.emit('list_room',data);
                 console.log("Rooms sent");
                 console.log(data);
