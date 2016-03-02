@@ -4,7 +4,6 @@ var fs = require('fs');
 var assert = require('assert');
 
 var io = require('socket.io');
-var Redis = require('ioredis');
 var mongoClient = require('mongodb').MongoClient;
 
 // Switch environment variables local/heroku
@@ -16,8 +15,6 @@ switch(process.argv[2]){
         break;
 
     default:
-        var sub = new Redis(process.env.REDISCLOUD_URL);
-        var pub = new Redis(process.env.REDISCLOUD_URL);
         var MONGOLAB_URI = process.env.MONGOLAB_URI;
         var port = process.env.PORT;
         console.log("heroku config");
