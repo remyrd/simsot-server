@@ -138,8 +138,6 @@ function emit_response_connect(socket,message){
 };
 
 function emit_list_room(socket){
-    // TODO : ne pas envoyer le password
-    // TODO : envoyer le nombre de joueurs connecté à la room
     console.log("Trying to get the rooms");
     mongoClient.connect(MONGOLAB_URI, function(err, db) {
         assert.equal(null, err);
@@ -159,7 +157,6 @@ function emit_list_room(socket){
 					});
 					console.log("Room found " + doc.room_name);					
 				}
-				console.log("nb : " + count + ", i : " + i);
 				if (i==count){
 					socket.emit('list_room',data);
 					console.log("Rooms sent");
@@ -279,16 +276,14 @@ function join_room(data, socket){
                     
                     doc.list_players.push(data.player_name);
                     doc.slot_empty--;
-                    db.inventory.update(
-                        { room_name: data.room_name },
+                    db.collection('Room').update(
+                        { "room_name": data.room_name },
                         {
-                          $set: {
-                            list_players: doc.list_players,
-                            slot_empty: doc.slot_empty
-                          },
-                          $currentDate: { lastModified: true }
-                        
-                    });
+							$set: {
+								"list_players": doc.list_players,
+								"slot_empty": doc.slot_empty
+							}                        
+						});
                     console.log(data.player_name + " joined the room " + data.room_name + " successfully");
                     socket.emit('response_join', "Join successful");				
                     console.log("Player list : " + doc.list_players);
