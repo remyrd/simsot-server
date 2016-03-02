@@ -162,8 +162,7 @@ function emit_list_room(socket){
                 });
                 
             }
-            console.log(i);
-            console.log(number_of_rooms);
+            console.log(!(cursor.hasNext()));
             if (!(cursor.hasNext())){
                 socket.emit('list_room',data);
                 console.log("Rooms sent");
