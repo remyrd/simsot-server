@@ -251,12 +251,13 @@ function create_room(data, socket){
 					assert.equal(err, null);
 					console.log("Inserted Room !!!");
 					socket.emit('response_create', "Create successful");		
-                    console.log("Player list : " + doc.list_players);
+                    console.log("Player list : ", doc.list_players);
                     socket.emit('list_player', doc.list_players);
 				}
 				catch (e) { // non-standard
 					console.log("Doublon présent !!!");
 					console.log(e.name + ': ' + e.message);
+					socket.emit('response_create', "Create error");
 				}
 			db.close();
 		});
@@ -269,6 +270,7 @@ function join_room(data, socket){
         assert.equal(null, err);
         var cursor = db.collection('Room').find( { "room_name": data.room_name } );
         cursor.each(function(err, doc) {
+			console.log(doc);
             assert.equal(err, null);
             if (doc != null) {
                 console.log("Trouvé ", data.room_name);
@@ -287,7 +289,7 @@ function join_room(data, socket){
 						});
                     console.log(data.player_name + " joined the room " + data.room_name + " successfully");
                     socket.emit('response_join', "Join successful");				
-                    console.log("Player list : " + doc.list_players);
+                    console.log("Player list : ", doc.list_players);
                     socket.emit('list_player', doc.list_players);
                 }
                 else {
