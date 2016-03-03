@@ -210,14 +210,16 @@ function check_authentification(data,socket) {
     
 	mongoClient.connect(MONGOLAB_URI, function(err, db) {
 		assert.equal(null, err);
-		var cursor =db.collection('User').find( { "pseudo": data.pseudo,"password" : data.password } );
+		var found = false;
+		var cursor = db.collection('User').find( { "pseudo": data.pseudo,"password" : data.password } );
 		cursor.each(function(err, doc) {
 			assert.equal(err, null);
 			if (doc != null) {
 				console.log("Found : " + data.pseudo);
+				found = true;
 				emit_response_connect(socket,"Connected");
 			}
-			else {
+			if (!found) {
 				console.log("Not found");
 				emit_response_connect(socket,"Authentification failed !");
 			}
@@ -268,12 +270,13 @@ function create_room(data, socket){
 function join_room(data, socket){
     mongoClient.connect(MONGOLAB_URI, function(err, db) {
         assert.equal(null, err);
+		var found = false;
         var cursor = db.collection('Room').find( { "room_name": data.room_name } );
         cursor.each(function(err, doc) {
-			console.log(doc);
             assert.equal(err, null);
             if (doc != null) {
                 console.log("Trouvé ", data.room_name);
+				found = true;
                 if(doc.slot_empty > 0){
                     console.log('Nombre de slot vide :', doc.slot_empty);
                     
@@ -297,7 +300,7 @@ function join_room(data, socket){
 					socket.emit('response_join', "Room full");
                 }
             }
-            else {
+            if (!found) {
                 console.log("Room not found");
 				socket.emit('response_join', "Room not found");
             }
@@ -315,19 +318,21 @@ function delete_room(data, socket){
         listener.sockets.in(data.room).leave(data.room_name);
         db.collection('Room').remove( { "room_name": data.room_name } );
         db.close();
-        });
+    });
 }
 
 function leave_room(data, socket){
     mongoClient.connect(MONGOLAB_URI, function(err, db) {
         assert.equal(null, err);
+		var found = false;
         var cursor = db.collection('Room').find( { "room_name": data.room_name } );
         cursor.each(function(err, doc) {
             assert.equal(err, null);
             if (doc != null) {
                 console.log("Trouvé ", data.room_name);
+				found = true;
                 if(doc.host==data.player_name){
-                    console.log("Host leaft the game");
+                    console.log("Host left the game");
                     delete_room(data,socket);
                 }
                 else {
@@ -351,7 +356,7 @@ function leave_room(data, socket){
                     socket.leave(data.room_name);
                 }
             }
-            else {
+            if (!found) {
                 console.log("Room not found");
                 socket.emit('response_quit', "Room not found");
             }
