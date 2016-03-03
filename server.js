@@ -117,6 +117,14 @@ listener.sockets.on('connection', function(socket){
         leave_room(data,socket);
     });
 
+    socket.on('kick',function(data){
+        console.log("kicking player");
+        socket.leave(data.room_name);
+
+        // RAJOUTER UNE VARIABLE NOM DU JOUEUR A LA CREATION DE LA SOCKET
+        //leave_room(data,socket);
+    });
+
     /*** User data distribution on the room ***/
     socket.on('client_data', function(data){
         console.log(data);
@@ -314,8 +322,7 @@ function delete_room(data, socket){
     mongoClient.connect(MONGOLAB_URI, function(err, db) {
         assert.equal(null, err);
         console.log("Kicking players off the room");
-        listener.sockets.in(data.room).emit('kick');
-        listener.sockets.in(data.room).leave(data.room_name);
+        listener.sockets.in(data.room).emit('kick', data);
         db.collection('Room').remove( { "room_name": data.room_name } );
         db.close();
     });
