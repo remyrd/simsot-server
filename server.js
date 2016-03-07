@@ -114,7 +114,6 @@ listener.sockets.on('connection', function(socket){
 	/*** Player in a room kicked if host leaves room ***/
     socket.on('kick',function(data){
         console.log("kicking player");
-        socket.leave(data.room_name);
     });
 
 	/*** Character selection screen ***/
@@ -258,7 +257,7 @@ function create_room(data, socket){
 				"GPS" : data.GPS,
 				"distance_min" : data.distance_min,
 				"slot_empty" : data.number_players_max -1
-			}, 
+			},
 			function(err, result) {
 				try {
 					console.log("room_name : " + data.room_name + ", host : " + data.host);
@@ -325,14 +324,13 @@ function join_room(data, socket){
 function delete_room(data, socket){
     mongoClient.connect(MONGOLAB_URI, function(err, db) {
         assert.equal(null, err);
-        console.log("Kicking players off the room");
-        listener.sockets.in(data.room).emit('kick', data);
         db.collection('Room').remove( { "room_name": data.room_name } );
         db.close();
     });
 }
 
 function leave_room(data, socket){
+    // emit list player
     mongoClient.connect(MONGOLAB_URI, function(err, db) {
         assert.equal(null, err);
 		var found = false;
@@ -344,14 +342,23 @@ function leave_room(data, socket){
 				found = true;
                 if(doc.host==data.player_name){
                     console.log("Host left the game");
-                    delete_room(data,socket);
+                    console.log("Kicking players off the room");
+                    listener.sockets.in(data.room).emit('kick', data);
                 }
-                else {
+                doc.slot_empty++;
+                if(doc.slot_empty==doc.number_players_max){
+                    //last player left the room delete the room directly
+                    console.log('No more player in the room');
+                    db.collection('Room').remove( { "room_name": data.room_name } );
+                    console.log('Room deleted');
+                }
+                else{
+                    // Remove player from the list player
                     var index = doc.list_players.indexOf(data.player_name);
                     if (index > -1) {
                         doc.list_players.splice(index, 1);
                     }
-                    doc.slot_empty++;
+                    // update the database
                     console.log('Nombre de slot vide restant :', doc.slot_empty);
                     db.collection('Room').update(
                         { "room_name": data.room_name },
@@ -361,11 +368,11 @@ function leave_room(data, socket){
                                 "slot_empty": doc.slot_empty
                             }                        
                         });
-                    socket.emit('response_quit', "Successfully left the room");                
                     console.log("Player list : " + doc.list_players);
-                    socket.emit('list_player', doc.list_players);
-                    socket.leave(data.room_name);
+                    listener.sockets.in(data.room).emit('list_player',doc.list_players);
                 }
+                socket.emit('response_quit', "Successfully left the room");
+                socket.leave(data.room_name);
             }
             if (!found) {
                 console.log("Room not found");
