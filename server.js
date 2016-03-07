@@ -127,6 +127,7 @@ listener.sockets.on('connection', function(socket){
     socket.on('game_start', function(data){
         console.log("Game start");
 		console.log(data);
+        set_room_invisible(data);
 		socket.emit('game_start_response',data);
         listener.sockets.in(data.room_name).emit('game_start_response', {"errorCode": 0 });
     });
@@ -167,7 +168,7 @@ function emit_list_room(socket){
                 console.log("No Room found");
             }
             else{
-                var cursor = db.collection('Room').find();
+                var cursor = db.collection('Room').find({ "visibility": true });
                 cursor.each( function(err, doc) {
                     assert.equal(err, null);
                     i++;
@@ -272,7 +273,8 @@ function create_room(data, socket){
 				"number_enemies_max" : data.number_enemies_max,
 				"GPS" : data.GPS,
 				"distance_min" : data.distance_min,
-				"slot_empty" : data.number_players_max -1
+				"slot_empty" : data.number_players_max -1,
+                "visibility" : true
 			},
 			function(err, result) {
 				try {
@@ -384,6 +386,30 @@ function leave_room(data, socket){
             if (!found) {
                 console.log("Room not found");
                 socket.emit('response_quit', "Room not found");
+            }
+            db.close();
+        });
+    });
+}
+
+function set_room_invisible(data){
+    mongoClient.connect(MONGOLAB_URI, function(err, db) {
+        assert.equal(null, err);
+        var cursor = db.collection('Room').find( { "room_name": data.room_name } );
+        cursor.each(function(err, doc) {
+            assert.equal(err, null);
+            if (doc != null) {
+                console.log('Set invisible :', data.room_name);
+                db.collection('Room').update(
+                    { "room_name": data.room_name },
+                    {
+                        $set: {
+                            "visibility": false,
+                        }                    
+                });
+            }
+            if (!found) {
+                console.log("Room not found");
             }
             db.close();
         });
