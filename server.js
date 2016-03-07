@@ -413,9 +413,6 @@ function set_room_invisible(data){
                         }                    
                 });
             }
-            if (!found) {
-                console.log("Room not found");
-            }
             db.close();
         });
     });
