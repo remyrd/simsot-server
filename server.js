@@ -120,7 +120,7 @@ listener.sockets.on('connection', function(socket){
     socket.on('character_choice',function(data){
 		console.log("Player " + data.playerName + " chose " + data.character);
 		console.log(data);
-		listener.sockets.in(data.room_name).emit('character_choice_response', data);		
+		listener.sockets.in(data.room).emit('character_choice_response', data);		
     });
 
 	/*** Start the game ***/
@@ -129,14 +129,14 @@ listener.sockets.on('connection', function(socket){
 		console.log(data);
         set_room_invisible(data);
 		socket.emit('game_start_response',data);
-        listener.sockets.in(data.room_name).emit('game_start_response', {"errorCode": 0 });
+        listener.sockets.in(data.room).emit('game_start_response', {"errorCode": 0 });
     });
 
     /*** User data distribution on the room ***/
     socket.on('character_position', function(data){
         console.log("Player: " + data.playerName + " is at x: " + data.x + " and y: " + data.y);
 		console.log(data);
-        listener.sockets.in(data.room_name).emit('character_position_response', data);
+        listener.sockets.in(data.room).emit('character_position_response', data);
     });
 
 	// En cas de problème
@@ -297,6 +297,8 @@ function create_room(data, socket){
 }
 
 function join_room(data, socket){
+    console.log('Player :', data.player_name);
+    console.log('Trying to join the room :', data.room_name);
     mongoClient.connect(MONGOLAB_URI, function(err, db) {
         assert.equal(null, err);
 		var found = false;
@@ -305,7 +307,6 @@ function join_room(data, socket){
             assert.equal(err, null);
             if (doc != null) {
                 if(doc.list_players.indexOf(data.player_name)== -1){
-                    console.log("Trouvé ", data.room_name);
     				found = true;
                     if(doc.slot_empty > 0){
                         doc.list_players.push(data.player_name);
@@ -320,8 +321,7 @@ function join_room(data, socket){
     							}                        
     						});
                         console.log(data.player_name + " joined the room " + data.room_name + " successfully");
-                        socket.emit('response_join', "Join successful");				
-                        console.log("Player list : ", doc.list_players);
+                        socket.emit('response_join', "Join successful");
                         listener.sockets.in(data.room).emit('list_player',doc.list_players);
                         socket.emit('list_player',doc.list_players);
                     }
@@ -331,7 +331,8 @@ function join_room(data, socket){
                     }
                 }
                 else{
-                   console.log("Player already in the room !!!"); 
+                   console.log("Player already in the room !!!");
+                   socket.emit('response_join', "Player already in the room"); 
                 }
             }
             if (!found) {
@@ -352,7 +353,6 @@ function leave_room(data, socket){
         cursor.each(function(err, doc) {
             assert.equal(err, null);
             if (doc != null) {
-                console.log("Trouvé ", data.room_name);
 				found = true;
                 if(doc.host==data.player_name){
                     console.log("Host left the game");
@@ -363,6 +363,7 @@ function leave_room(data, socket){
                 if(doc.slot_empty==doc.number_players_max){
                     //last player left the room delete the room directly
                     console.log('No more player in the room');
+                    console.log('Deleting the room');
                     db.collection('Room').remove( { "room_name": data.room_name } );
                     console.log('Room deleted');
                 }
@@ -398,13 +399,13 @@ function leave_room(data, socket){
 }
 
 function set_room_invisible(data){
+    console.log('Setting invisible :', data.room_name);
     mongoClient.connect(MONGOLAB_URI, function(err, db) {
         assert.equal(null, err);
         var cursor = db.collection('Room').find( { "room_name": data.room_name } );
         cursor.each(function(err, doc) {
             assert.equal(err, null);
             if (doc != null) {
-                console.log('Set invisible :', data.room_name);
                 db.collection('Room').update(
                     { "room_name": data.room_name },
                     {
@@ -412,6 +413,7 @@ function set_room_invisible(data){
                             "visibility": false,
                         }                    
                 });
+                console.log('Set invisible :', data.room_name);
             }
             db.close();
         });
