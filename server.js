@@ -261,13 +261,13 @@ function create_room(data, socket){
 					assert.equal(err, null);
 					console.log("Inserted Room !!!");
 					socket.emit('response_create', "Create successful");		
-                    console.log("Player list : ", doc.list_players);
-                    socket.emit('list_player', doc.list_players);
+                    console.log("Player list : ", data.list_players);
+                    socket.emit('list_player', data.list_players);
 				}
 				catch (e) { // non-standard
-					console.log("Doublon présent !!!");
 					console.log(e.name + ': ' + e.message);
 					socket.emit('response_create', "Create error");
+                    console.log("Doublon présent !!!");
 				}
 			db.close();
 		});
