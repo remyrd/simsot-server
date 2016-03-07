@@ -304,29 +304,34 @@ function join_room(data, socket){
         cursor.each(function(err, doc) {
             assert.equal(err, null);
             if (doc != null) {
-                console.log("Trouvé ", data.room_name);
-				found = true;
-                if(doc.slot_empty > 0){
-                    doc.list_players.push(data.player_name);
-                    doc.slot_empty--;
-                    console.log('Nombre de slot vide restant :', doc.slot_empty);
-                    db.collection('Room').update(
-                        { "room_name": data.room_name },
-                        {
-							$set: {
-								"list_players": doc.list_players,
-								"slot_empty": doc.slot_empty
-							}                        
-						});
-                    console.log(data.player_name + " joined the room " + data.room_name + " successfully");
-                    socket.emit('response_join', "Join successful");				
-                    console.log("Player list : ", doc.list_players);
-                    listener.sockets.in(data.room).emit('list_player',doc.list_players);
-                    socket.emit('list_player',doc.list_players);
+                if(doc.list_players.indexOf(data.player_name)== -1){
+                    console.log("Trouvé ", data.room_name);
+    				found = true;
+                    if(doc.slot_empty > 0){
+                        doc.list_players.push(data.player_name);
+                        doc.slot_empty--;
+                        console.log('Nombre de slot vide restant :', doc.slot_empty);
+                        db.collection('Room').update(
+                            { "room_name": data.room_name },
+                            {
+    							$set: {
+    								"list_players": doc.list_players,
+    								"slot_empty": doc.slot_empty
+    							}                        
+    						});
+                        console.log(data.player_name + " joined the room " + data.room_name + " successfully");
+                        socket.emit('response_join', "Join successful");				
+                        console.log("Player list : ", doc.list_players);
+                        listener.sockets.in(data.room).emit('list_player',doc.list_players);
+                        socket.emit('list_player',doc.list_players);
+                    }
+                    else {
+                        console.log("Room full");
+    					socket.emit('response_join', "Room full");
+                    }
                 }
-                else {
-                    console.log("Room full");
-					socket.emit('response_join', "Room full");
+                else{
+                   console.log("Player already in the room !!!"); 
                 }
             }
             if (!found) {
