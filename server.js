@@ -158,7 +158,7 @@ function emit_list_room(socket){
         assert.equal(null, err);
         var data = [];
         var i = 0;
-		db.collection('Room').count(function(err, count) {
+        db.collection('Room').count(function(err, count) {
             if(count==0){
                 socket.emit('list_room',data);
                 console.log("No Room found");
@@ -185,7 +185,7 @@ function emit_list_room(socket){
                     db.close();
                 });
             }
-		});        
+        });        
     });
 }
 
