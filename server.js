@@ -80,7 +80,7 @@ listener.sockets.on('connection', function(socket){
             insertUser(data,socket);   
         }
         else {
-            emit_response_subscribe(socket, { 'error_code' : 2, "msg" : "Champ vide !"});
+            emit_response_subscribe(socket, { 'error_code' : 2, "msg" : "Field empty !"});
         }
     });
 
