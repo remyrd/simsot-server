@@ -118,7 +118,7 @@ listener.sockets.on('connection', function(socket){
 
 	/*** Character selection screen ***/
     socket.on('character_choice',function(data){
-		console.log("Player " + data.playerName + " chose " + data.character);
+		console.log("Player " + data.player_name + " chose " + data.character);
 		console.log(data);
 		listener.sockets.in(data.room_name).emit('character_choice_response', data);		
     });
@@ -134,7 +134,7 @@ listener.sockets.on('connection', function(socket){
 
     /*** User data distribution on the room ***/
     socket.on('character_position', function(data){
-        console.log("Player: " + data.playerName + " is at x: " + data.x + " and y: " + data.y);
+        console.log("Player: " + data.player_name + " is at x: " + data.x + " and y: " + data.y);
 		console.log(data);
         listener.sockets.in(data.room_name).emit('character_position_response', data);
     });
@@ -181,6 +181,7 @@ function emit_list_room(socket){
                         });
                         console.log("Room found " + doc.room_name);                 
                     }
+					console.log("count: " + count + ", i: " + i);
                     if (i==count){
                         socket.emit('list_room',data);
                         console.log("Rooms sent");
