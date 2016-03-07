@@ -301,7 +301,7 @@ function join_room(data, socket){
                     console.log(data.player_name + " joined the room " + data.room_name + " successfully");
                     socket.emit('response_join', "Join successful");				
                     console.log("Player list : ", doc.list_players);
-                    socket.emit('list_player', doc.list_players);
+                    listener.sockets.in(data.room).emit('list_player',doc.list_players);
                 }
                 else {
                     console.log("Room full");
