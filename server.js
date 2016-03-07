@@ -265,8 +265,8 @@ function create_room(data, socket){
 					assert.equal(err, null);
 					console.log("Inserted Room !!!");
 					socket.emit('response_create', "Create successful");		
-                    console.log("Player list : ", data.list_players);
-                    socket.emit('list_player', data.list_players);
+                    console.log("Player list : ", tab_player);
+                    socket.emit('list_player', tab_player);
 				}
 				catch (e) { // non-standard
 					console.log(e.name + ': ' + e.message);
