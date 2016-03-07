@@ -286,10 +286,9 @@ function join_room(data, socket){
                 console.log("Trouvé ", data.room_name);
 				found = true;
                 if(doc.slot_empty > 0){
-                    console.log('Nombre de slot vide :', doc.slot_empty);
-                    
                     doc.list_players.push(data.player_name);
                     doc.slot_empty--;
+                    console.log('Nombre de slot vide restant :', doc.slot_empty);
                     db.collection('Room').update(
                         { "room_name": data.room_name },
                         {
@@ -348,7 +347,7 @@ function leave_room(data, socket){
                         doc.list_players.splice(index, 1);
                     }
                     doc.slot_empty++;
-                    console.log('Nombre de slot vide :', doc.slot_empty);
+                    console.log('Nombre de slot vide restant :', doc.slot_empty);
                     db.collection('Room').update(
                         { "room_name": data.room_name },
                         {
