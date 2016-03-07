@@ -122,16 +122,16 @@ listener.sockets.on('connection', function(socket){
 		listener.sockets.in(data.room).emit('character_choice_response',data);		
     });
 
-    /*** Start the game ***/
+	/*** Start the game ***/
     socket.on('game_start', function(data){
-        console.log(data);
+        console.log("Game start");
 		socket.emit('game_start_response',data);
         listener.sockets.in(data.room_name).emit('game_start_response', {"errorCode": 0 });
     });
 
     /*** User data distribution on the room ***/
     socket.on('character_position', function(data){
-        console.log(data);
+        console.log("Player: " + data.name + " is at x: " + data.x + " and y: " + data.y);
         listener.sockets.in(data.room).emit('character_position_response', {"errorCode": 0 });
     });
 
