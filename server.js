@@ -322,23 +322,23 @@ function join_room(data, socket){
     							}                        
     						});
                         console.log(data.player_name + " joined the room " + data.room_name + " successfully");
-                        socket.emit('response_join', "Join successful");
+                        socket.emit('response_join', { 'error_code' : 0, "msg" : "Join successful"});
                         listener.sockets.in(data.room_name).emit('list_player',doc.list_players);
                         socket.emit('list_player',doc.list_players);
                     }
                     else {
                         console.log("Room full");
-    					socket.emit('response_join', "Room full");
+    					socket.emit('response_join', { 'error_code' : 2, "msg" : "Room full"});
                     }
                 }
                 else{
                    console.log("Player already in the room !!!");
-                   socket.emit('response_join', "Player already in the room"); 
+                   socket.emit('response_join', { 'error_code' : 3, "msg" : "Player already in the room"}); 
                 }
             }
             if (!found) {
                 console.log("Room not found");
-				socket.emit('response_join', "Room not found");
+				socket.emit('response_join', { 'error_code' : 1, "msg" : "Room not found"});
             }
             db.close();
         });
