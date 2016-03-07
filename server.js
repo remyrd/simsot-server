@@ -160,6 +160,10 @@ function emit_list_room(socket){
         var i = 0;
 		db.collection('Room').count(function(err, count) {
             if(count==0){
+                socket.emit('list_room',data);
+                console.log("No Room found");
+            }
+            else{
                 var cursor = db.collection('Room').find();
                 cursor.each( function(err, doc) {
                     assert.equal(err, null);
@@ -180,10 +184,6 @@ function emit_list_room(socket){
                     }
                     db.close();
                 });
-            }
-            else{
-                socket.emit('list_room',data);
-                console.log("No Room found");
             }
 		});        
     });
