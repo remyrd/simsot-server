@@ -80,7 +80,7 @@ listener.sockets.on('connection', function(socket){
             insertUser(data,socket);   
         }
         else {
-            emit_response_subscribe(socket,"Champ vide !");
+            emit_response_subscribe(socket, { 'error_code' : 2, "msg" : "Champ vide !"});
         }
     });
 
@@ -148,12 +148,12 @@ listener.sockets.on('connection', function(socket){
 
 function emit_response_subscribe(socket,message){
 	socket.emit('response_subscribe',message);    
-	console.log("Message de type 'response_subscribe' envoyé : " + message);
+	console.log("Message de type 'response_subscribe' envoyé : " + JSON.stringify(message));
 };
 
 function emit_response_connect(socket,message){
 	socket.emit('response_connect',message);   
-	console.log("Message de type 'response_connect' envoyé : " + message); 
+	console.log("Message de type 'response_connect' envoyé : " + JSON.stringify(message)); 
 };
 
 function emit_list_room(socket){
@@ -209,12 +209,12 @@ function insertUser(data,socket) {
 				try {
 					assert.equal(err, null);
 					console.log("Inserted user " + data.pseudo);
-					emit_response_subscribe(socket,"Registered");
+					emit_response_subscribe(socket, { 'error_code' : 0, "msg" : "Registered"});
 				}
 				catch (e) { // non-standard
 					console.log("Already existing user " + data.pseudo);
 					console.log(e.name + ': ' + e.message);
-					emit_response_subscribe(socket,"Already used login !");
+					emit_response_subscribe(socket, { 'error_code' : 1, "msg" : "Already used login !"});
 				}
 			db.close();
 		});
@@ -246,11 +246,11 @@ function check_authentification(data,socket) {
 			if (doc != null) {
 				console.log("Found : " + data.pseudo);
 				found = true;
-				emit_response_connect(socket,"Connected");
+				emit_response_connect(socket, { 'error_code' : 0, "msg" : "Connected"} );
 			}
 			if (!found) {
 				console.log("Not found");
-				emit_response_connect(socket,"Authentification failed !");
+				emit_response_connect(socket, { 'error_code' : 1, "msg" : "Authentification failed !"});
 			}
 			db.close();
 		});
