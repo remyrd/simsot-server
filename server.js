@@ -159,26 +159,32 @@ function emit_list_room(socket){
         var data = [];
         var i = 0;
 		db.collection('Room').count(function(err, count) {
-			var cursor = db.collection('Room').find();
-			cursor.each( function(err, doc) {
-				assert.equal(err, null);
-				i++;
-				if (doc != null) {
-					data.push({
-						"host" : doc.host,
-						"room_name" : doc.room_name,
-						"slot_empty" : doc.slot_empty,
-						"GPS" : doc.GPS
-					});
-					console.log("Room found " + doc.room_name);					
-				}
-				if (i==count){
-					socket.emit('list_room',data);
-					console.log("Rooms sent");
-					console.log(data);
-				}
-				db.close();
-			});   
+            if(count==0){
+                var cursor = db.collection('Room').find();
+                cursor.each( function(err, doc) {
+                    assert.equal(err, null);
+                    i++;
+                    if (doc != null) {
+                        data.push({
+                            "host" : doc.host,
+                            "room_name" : doc.room_name,
+                            "slot_empty" : doc.slot_empty,
+                            "GPS" : doc.GPS
+                        });
+                        console.log("Room found " + doc.room_name);                 
+                    }
+                    if (i==count){
+                        socket.emit('list_room',data);
+                        console.log("Rooms sent");
+                        console.log(data);
+                    }
+                    db.close();
+                });
+            }
+            else{
+                socket.emit('list_room',data);
+                console.log("No Room found");
+            }
 		});        
     });
 }
