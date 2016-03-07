@@ -320,15 +320,6 @@ function join_room(data, socket){
     });
 }
 
-
-function delete_room(data, socket){
-    mongoClient.connect(MONGOLAB_URI, function(err, db) {
-        assert.equal(null, err);
-        db.collection('Room').remove( { "room_name": data.room_name } );
-        db.close();
-    });
-}
-
 function leave_room(data, socket){
     // emit list player
     mongoClient.connect(MONGOLAB_URI, function(err, db) {
