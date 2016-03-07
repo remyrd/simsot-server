@@ -87,21 +87,15 @@ listener.sockets.on('connection', function(socket){
     socket.on('connect_user', function(data){
         check_authentification(data,socket);
     });
-
-    socket.on('new_room', function(data){
-        create_room(data,socket);
-    });
 	
     socket.on('get_list_room', function(data){
         // TODO : a prendre en parametre la pos gps et renvoyer les rooms trié par distances
         emit_list_room(socket);
     });
 
-	// En cas de problème
-	socket.on('error', function (err) { 
-		console.error(err.stack); 
-		//socket.destroy(); // end/disconnect/close/destroy ?
-	});
+    socket.on('new_room', function(data){
+        create_room(data,socket);
+    });
 
     /*** User creates/joins room ***/
     socket.on('join', function(data){
@@ -117,12 +111,16 @@ listener.sockets.on('connection', function(socket){
         leave_room(data,socket);
     });
 
+	/*** Player in a room kicked if host leaves room ***/
     socket.on('kick',function(data){
         console.log("kicking player");
         socket.leave(data.room_name);
+    });
 
-        // RAJOUTER UNE VARIABLE NOM DU JOUEUR A LA CREATION DE LA SOCKET
-        //leave_room(data,socket);
+	/*** Character selection screen ***/
+    socket.on('character_choice',function(data){
+		console.log("Player " + data.playerName + " chose " + data.character);
+		listener.sockets.in(data.room).emit('character_choice_response',data);		
     });
 
     /*** User data distribution on the room ***/
@@ -130,6 +128,12 @@ listener.sockets.on('connection', function(socket){
         console.log(data);
         listener.sockets.in(data.room).emit('player_data',data);
     });
+
+	// En cas de problème
+	socket.on('error', function (err) { 
+		console.error(err.stack); 
+		//socket.destroy(); // end/disconnect/close/destroy ?
+	});
 });
 
 function emit_response_subscribe(socket,message){
