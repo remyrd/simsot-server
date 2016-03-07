@@ -122,6 +122,13 @@ listener.sockets.on('connection', function(socket){
 		listener.sockets.in(data.room).emit('character_choice_response',data);		
     });
 
+    /*** Start the game ***/
+    socket.on('game_start', function(data){
+        console.log(data);
+		socket.emit('game_start_response',data);
+        listener.sockets.in(data.room_name).emit('game_start_response', {"errorCode": 0 });
+    });
+
     /*** User data distribution on the room ***/
     socket.on('client_data', function(data){
         console.log(data);
