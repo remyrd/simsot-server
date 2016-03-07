@@ -119,20 +119,23 @@ listener.sockets.on('connection', function(socket){
 	/*** Character selection screen ***/
     socket.on('character_choice',function(data){
 		console.log("Player " + data.playerName + " chose " + data.character);
-		listener.sockets.in(data.room).emit('character_choice_response',data);		
+		console.log(data);
+		listener.sockets.in(data.room_name).emit('character_choice_response', {"errorCode": 0 });		
     });
 
 	/*** Start the game ***/
     socket.on('game_start', function(data){
         console.log("Game start");
+		console.log(data);
 		socket.emit('game_start_response',data);
         listener.sockets.in(data.room_name).emit('game_start_response', {"errorCode": 0 });
     });
 
     /*** User data distribution on the room ***/
     socket.on('character_position', function(data){
-        console.log("Player: " + data.name + " is at x: " + data.x + " and y: " + data.y);
-        listener.sockets.in(data.room).emit('character_position_response', {"errorCode": 0 });
+        console.log("Player: " + data.playerName + " is at x: " + data.x + " and y: " + data.y);
+		console.log(data);
+        listener.sockets.in(data.room_name).emit('character_position_response', {"errorCode": 0 });
     });
 
 	// En cas de problème
