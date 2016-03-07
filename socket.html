@@ -27,7 +27,7 @@
 			
       $(document).ready(function(){
 				$('#sendPosition').click(function(e){
-					socket.emit('client_data', {
+					socket.emit('character_position', {
             'room':$("#room").val(),
 						'name': $("#name").val(),
 						'x': $("#textX").val(),

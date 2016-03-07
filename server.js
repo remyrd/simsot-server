@@ -130,9 +130,9 @@ listener.sockets.on('connection', function(socket){
     });
 
     /*** User data distribution on the room ***/
-    socket.on('client_data', function(data){
+    socket.on('character_position', function(data){
         console.log(data);
-        listener.sockets.in(data.room).emit('player_data',data);
+        listener.sockets.in(data.room).emit('character_position_response', {"errorCode": 0 });
     });
 
 	// En cas de problème
