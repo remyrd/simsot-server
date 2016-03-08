@@ -99,7 +99,6 @@ listener.sockets.on('connection', function(socket){
 
     /*** User creates/joins room ***/
     socket.on('join', function(data){
-        socket.join(data.room_name); //subscribe to the pub sub
         console.log(data.player_name + " tries to join the room " + data.room_name);
         join_room(data,socket);
     });
@@ -161,23 +160,23 @@ function emit_list_room(socket){
     mongoClient.connect(MONGOLAB_URI, function(err, db) {
         assert.equal(null, err);
         var data = [];       
-            var cursor = db.collection('Room').find({ "visibility": true });
-            cursor.toArray(function(err, docs) {
-                assert.equal(err, null);
-                for(i=0; i<docs.length; i++){
-                    var doc = docs[i];
-                    data.push({
-                        "host" : doc.host,
-                        "room_name" : doc.room_name,
-                        "slot_empty" : doc.slot_empty,
-                        "GPS" : doc.GPS
-                    });
-                    console.log("Room found " + doc.room_name); 
-                }
+        var cursor = db.collection('Room').find({ "visibility": true });
+        cursor.toArray(function(err, docs) {
+            assert.equal(err, null);
+            for(i=0; i<docs.length; i++){
+                var doc = docs[i];
+                data.push({
+                    "host" : doc.host,
+                    "room_name" : doc.room_name,
+                    "slot_empty" : doc.slot_empty,
+                    "GPS" : doc.GPS
+                });
+                console.log("Room found " + doc.room_name); 
+            }
 
-                socket.emit('list_room',data);
-                db.close();
-            });    
+            socket.emit('list_room',data);
+            db.close();
+        });    
     });
 }
 
@@ -268,6 +267,7 @@ function create_room(data, socket){
 				try {
 					console.log("room_name : " + data.room_name + ", host : " + data.host);
 					assert.equal(err, null);
+                    socket.join(data.room_name);
 					console.log("Inserted Room !!!");
 					socket.emit('response_create', { 'error_code' : 0, "msg" : "Create successful"});		
                     console.log("Player list : ", tab_player);
@@ -308,6 +308,7 @@ function join_room(data, socket){
     								"slot_empty": doc.slot_empty
     							}                        
     						});
+                        socket.join(data.room_name); //subscribe to the pub sub
                         console.log(data.player_name + " joined the room " + data.room_name + " successfully");
                         socket.emit('response_join', { 'error_code' : 0, "msg" : "Join successful"});
                         listener.sockets.in(data.room_name).emit('list_player',doc.list_players);
