@@ -127,8 +127,13 @@ listener.sockets.on('connection', function(socket){
         console.log("Game start");
 		console.log(data);
         set_room_invisible(data);
-		socket.emit('game_start_response',data);
         listener.sockets.in(data.room_name).emit('game_start_response', {"errorCode": 0 });
+    });
+
+    socket.on("character_timeout_ended", function(data){
+         console.log("Character timeout ended");
+         console.log(data);
+         listener.sockets.in(data.room_name).emit('character_timeout_ended_response', {"errorCode": 0 });
     });
 
     /*** User data distribution on the room ***/
