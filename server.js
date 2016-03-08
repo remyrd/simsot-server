@@ -160,31 +160,24 @@ function emit_list_room(socket){
     console.log("Trying to get the rooms");
     mongoClient.connect(MONGOLAB_URI, function(err, db) {
         assert.equal(null, err);
-        var data = [];
-        var i = 0;
-        db.collection('Room').count(function(err, count) {
-                var cursor = db.collection('Room').find({ "visibility": true });
-                cursor.each( function(err, doc) {
-                    assert.equal(err, null);
-                    if (doc != null) {
-                        data.push({
-                            "host" : doc.host,
-                            "room_name" : doc.room_name,
-                            "slot_empty" : doc.slot_empty,
-                            "GPS" : doc.GPS
-                        });
-                        console.log("Room found " + doc.room_name);                 
-                    }
-					console.log("count: " + count + ", i: " + i);
-                    db.close();
-                });
-                //socket.emit('list_room',data);
-                console.log("Rooms sent");
-                console.log(data);
-            });
-            //socket.emit('list_room',data);
-            console.log("Rooms sent 2");
-            console.log(data);       
+        var data = [];       
+            var cursor = db.collection('Room').find({ "visibility": true });
+            cursor.toArray(function(err, docs) {
+                assert.equal(err, null);
+                for(i=0; i<docs.length; i++){
+                    var doc = docs[i];
+                    data.push({
+                        "host" : doc.host,
+                        "room_name" : doc.room_name,
+                        "slot_empty" : doc.slot_empty,
+                        "GPS" : doc.GPS
+                    });
+                    console.log("Room found " + doc.room_name); 
+                }
+
+                socket.emit('list_room',data);
+                db.close();
+            });    
     });
 }
 
