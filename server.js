@@ -171,9 +171,8 @@ function emit_list_room(socket){
                     "slot_empty" : doc.slot_empty,
                     "GPS" : doc.GPS
                 });
-                console.log("Room found " + doc.room_name); 
             }
-
+            console.log(data);
             socket.emit('list_room',data);
             db.close();
         });    
@@ -375,11 +374,12 @@ function leave_room(data, socket){
                     console.log("Player list : " + doc.list_players);
                     listener.sockets.in(data.room_name).emit('list_player',doc.list_players);
                 }
+				console.log(data.player_name + " left the room " + data.room_name);
                 socket.emit('response_quit', "Successfully left the room");
                 socket.leave(data.room_name);
             }
             if (!found) {
-                console.log("Room not found");
+                console.log("Room not found: " + data.room_name);
                 socket.emit('response_quit', "Room not found");
             }
             db.close();
