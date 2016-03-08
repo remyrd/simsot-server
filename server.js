@@ -163,15 +163,9 @@ function emit_list_room(socket){
         var data = [];
         var i = 0;
         db.collection('Room').count(function(err, count) {
-            if(count==0){
-                socket.emit('list_room',data);
-                console.log("No Room found");
-            }
-            else{
                 var cursor = db.collection('Room').find({ "visibility": true });
                 cursor.each( function(err, doc) {
                     assert.equal(err, null);
-                    i++;
                     if (doc != null) {
                         data.push({
                             "host" : doc.host,
@@ -182,15 +176,15 @@ function emit_list_room(socket){
                         console.log("Room found " + doc.room_name);                 
                     }
 					console.log("count: " + count + ", i: " + i);
-                    if (i==count){
-                        socket.emit('list_room',data);
-                        console.log("Rooms sent");
-                        console.log(data);
-                    }
                     db.close();
                 });
-            }
-        });        
+                //socket.emit('list_room',data);
+                console.log("Rooms sent");
+                console.log(data);
+            });
+            //socket.emit('list_room',data);
+            console.log("Rooms sent 2");
+            console.log(data);       
     });
 }
 
