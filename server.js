@@ -250,7 +250,6 @@ function check_authentification(data,socket) {
 function create_room(data, socket){
     console.log("Trying to insert ", data.room_name, " with host ", data.host);
 	var tab_player = [];
-	var tab_enemy = [];
 	tab_player.push(data.host);
 	mongoClient.connect(MONGOLAB_URI, function(err, db) {
 		assert.equal(null, err);
@@ -259,9 +258,7 @@ function create_room(data, socket){
 				"room_password" : data.room_password,
 				"host" : data.host,
 				"list_players" : tab_player,
-				"list_enemies" : tab_enemy,
 				"number_players_max" : data.number_players_max,
-				"number_enemies_max" : data.number_enemies_max,
 				"GPS" : data.GPS,
 				"distance_min" : data.distance_min,
 				"slot_empty" : data.number_players_max -1,
