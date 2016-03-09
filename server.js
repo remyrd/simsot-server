@@ -310,8 +310,7 @@ function join_room(data, socket){
                         socket.join(data.room_name); //subscribe to the pub sub
                         console.log(data.player_name + " joined the room " + data.room_name + " successfully");
                         socket.emit('response_join', { 'error_code' : 0, "msg" : "Join successful"});
-                        listener.sockets.in(data.room_name).emit('list_player',doc.list_players).delay(1000);
-                        socket.emit('list_player',doc.list_players);
+                        listener.sockets.in(data.room_name).emit('list_player',doc.list_players);
                     }
                     else {
                         console.log("Room full");
