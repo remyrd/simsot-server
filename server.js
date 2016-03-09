@@ -138,8 +138,6 @@ listener.sockets.on('connection', function(socket){
 
     /*** User data distribution on the room ***/
     socket.on('character_position', function(data){
-        console.log("Player: " + data.player_name + " is at x: " + data.x + " and y: " + data.y);
-		console.log(data);
         listener.sockets.in(data.room_name).emit('character_position_response', data);
     });
 
