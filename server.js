@@ -176,7 +176,7 @@ function emit_list_room(socket){
                 });
             }
             console.log(data);
-            socket.emit('list_room',data);
+            socket.emit('list_room', {'error_code' : 2, "rooms" : data}));
             db.close();
         });    
     });
