@@ -175,8 +175,8 @@ function emit_list_room(socket){
                     "GPS" : doc.GPS
                 });
             }
-            console.log(data);
-            socket.emit('list_room', {'error_code' : 2, "rooms" : data}));
+            console.log({'error_code' : 2, "rooms" : data});
+            socket.emit('list_room', {'error_code' : 2, "rooms" : data});
             db.close();
         });    
     });
