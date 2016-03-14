@@ -256,7 +256,7 @@ function create_room(data, socket){
 				"room_password" : data.room_password,
 				"host" : data.host,
 				"list_players" : tab_player,
-				"number_players_max" : data.number_players_max,
+				"number_players_max" : 5,
 				"GPS" : data.GPS,
 				"distance_min" : data.distance_min,
 				"slot_empty" : data.number_players_max -1,
