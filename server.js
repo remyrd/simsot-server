@@ -97,6 +97,10 @@ listener.sockets.on('connection', function(socket){
         create_room(data,socket);
     });
 
+    socket.on('create_solo_room', function(data){
+        create_solo_room(data,socket);
+    });
+
     /*** User creates/joins room ***/
     socket.on('join', function(data){
         console.log(data.player_name + " tries to join the room " + data.room_name);
@@ -280,8 +284,44 @@ function create_room(data, socket){
 			db.close();
 		});
 	});
-
 }
+
+function create_solo_room(data, socket){
+	var room_name = data.player_name + "_room";
+    console.log("Trying to insert solo room ", room_name, " with player ", data.player_name);
+	var tab_player = [];
+	tab_player.push(data.player_name);
+	mongoClient.connect(MONGOLAB_URI, function(err, db) {
+		assert.equal(null, err);
+			db.collection('Room').insertOne({
+				"room_name" : room_name,
+				"room_password" : data.room_password,
+				"host" : data.player_name,
+				"list_players" : tab_player,
+				"number_players_max" : 5,
+				"GPS" : data.GPS,
+				"distance_min" : data.distance_min,
+				"slot_empty" : data.number_players_max -1,
+                "visibility" : false
+			},
+			function(err, result) {
+				try {
+					console.log("room_name : " + room_name + ", player : " + data.player_name);
+					assert.equal(err, null);
+                    socket.join(room_name);
+					console.log("Inserted Room !!!");
+					socket.emit('create_solo_room_response', { 'error_code' : 0, "msg" : "Create successful", "room_name" : room_name});	
+				}
+				catch (e) { // non-standard
+					console.log(e.name + ': ' + e.message);
+					socket.emit('create_solo_room_response', { 'error_code' : 1, "msg" : "Creation fail"});
+                    console.log("Doublon présent !!!");
+				}
+			db.close();
+		});
+	});
+}
+
 
 function join_room(data, socket){
     console.log('Player :', data.player_name);
