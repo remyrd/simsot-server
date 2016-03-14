@@ -190,7 +190,7 @@ function emit_list_room(socket){
                     "GPS" : doc.GPS
                 });
             }
-            emit(socket, 'list_room', {'error_code' : 2, "rooms" : data});
+            emit(socket, 'list_room', {'error_code' : 0, "rooms" : data});
             db.close();
         });    
     });
@@ -397,11 +397,11 @@ function leave_room(data, socket){
                     console.log("Player list : " + doc.list_players);
                     listener.sockets.in(data.room_name).emit('list_player',doc.list_players);
                 }
-                emit(socket, 'response_quit', "Successfully left the room");
+                emit(socket, 'response_quit', { 'error_code' : 0, "msg" : "Successfully left the room"});
                 socket.leave(data.room_name);
             }
             if (!found) {
-                emit(socket, 'response_quit', "Room not found");
+                emit(socket, 'response_quit', { 'error_code' : 1, "msg" : "Room not found"});
             }
             db.close();
         });
