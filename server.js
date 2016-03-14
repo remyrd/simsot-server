@@ -260,7 +260,7 @@ function create_room(data, socket){
 				try {
 					assert.equal(err, null);
                     socket.join(data.room_name);
-					emit(socket, 'response_create', { 'error_code' : 0, "msg" : "Create successful"});	
+					emit(socket, 'response_create', { 'error_code' : 0, "msg" : "Create successful", "room_name" : data.room_name, "host" : data.host});	
                     emit(socket, 'list_player', tab_player);
 				}
 				catch (e) { // non-standard
