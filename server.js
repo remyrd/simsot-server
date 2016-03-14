@@ -76,75 +76,87 @@ var listener = io.listen(server);
 listener.sockets.on('connection', function(socket){
 
     socket.on('subscribe', function(data){
-		console.log("Received subscribe" + JSON.stringify(data));
+		console.log("==========");
+		console.log("Received subscribe", JSON.stringify(data));
         if(data.pseudo != null && data.password != null && data.pseudo != "" && data.password != ""){
             insertUser(data,socket);   
         }
         else {
-            emit(socket, 'response_subscribe', { 'error_code' : 2, "msg" : "Field empty !"});
+            emit(socket, 'response_subscribe', { 'error_code' : 2, "msg" : "Username or password is empty."});
         }
     });
 
     socket.on('connect_user', function(data){
-		console.log("Received connect_user" + JSON.stringify(data));
+		console.log("==========");
+		console.log("Received connect_user", JSON.stringify(data));
         check_authentification(data,socket);
     });
 	
     socket.on('get_list_room', function(data){
         // TODO : a prendre en parametre la pos gps et renvoyer les rooms trié par distances
-		console.log("Received get_list_room" + JSON.stringify(data));
+		console.log("==========");
+		console.log("Received get_list_room", JSON.stringify(data));
         emit_list_room(socket);
     });
 
     socket.on('new_room', function(data){
-		console.log("Received new_room" + JSON.stringify(data));
+		console.log("==========");
+		console.log("Received new_room", JSON.stringify(data));
         create_room(data,socket);
     });
 
     socket.on('create_solo_room', function(data){
-		console.log("Received create_solo_room" + JSON.stringify(data));
+		console.log("==========");
+		console.log("Received create_solo_room", JSON.stringify(data));
         create_solo_room(data,socket);
     });
 
     /*** User creates/joins room ***/
     socket.on('join', function(data){
-		console.log("Received join" + JSON.stringify(data));
+		console.log("==========");
+		console.log("Received join", JSON.stringify(data));
         join_room(data,socket);
     });
         
         
     /*** User leaves room ***/
     socket.on('leave',function(data){
-		console.log("Received leave" + JSON.stringify(data));
+		console.log("==========");
+		console.log("Received leave", JSON.stringify(data));
         leave_room(data,socket);
     });
 
 	/*** Player in a room kicked if host leaves room ***/
     socket.on('kick',function(data){
-		console.log("Received kick" + JSON.stringify(data));
+		console.log("==========");
+		console.log("Received kick", JSON.stringify(data));
     });
 
 	/*** Character selection screen ***/
     socket.on('character_choice',function(data){
-		console.log("Received character_choice" + JSON.stringify(data));
+		console.log("==========");
+		console.log("Received character_choice", JSON.stringify(data));
 		listener.sockets.in(data.room_name).emit('character_choice_response', data);		
     });
 
 	/*** Start the game ***/
     socket.on('game_start', function(data){
-		console.log("Received game_start" + JSON.stringify(data));
+		console.log("==========");
+		console.log("Received game_start", JSON.stringify(data));
         set_room_invisible(data);
         listener.sockets.in(data.room_name).emit('game_start_response', {"error_code": 0 });
     });
 
     socket.on("character_timeout_ended", function(data){
-		console.log("Received character_timeout_ended" + JSON.stringify(data));
+		console.log("==========");
+		console.log("Received character_timeout_ended", JSON.stringify(data));
          listener.sockets.in(data.room_name).emit('character_timeout_ended_response', {"error_code": 0 });
     });
 
     /*** User data distribution on the room ***/
     socket.on('character_position', function(data){
-		console.log("Received character_position" + JSON.stringify(data));
+		console.log("==========");
+		console.log("Received character_position", JSON.stringify(data));
         listener.sockets.in(data.room_name).emit('character_position_response', data);
     });
 
@@ -156,10 +168,9 @@ listener.sockets.on('connection', function(socket){
 });
 
 function emit(socket, title, message) {
-	console.log("=====");
+	console.log("==========");
 	console.log("Sending " + title);
 	console.log(JSON.stringify(message));
-	console.log("=====");
 	socket.emit(title, message);    
 }
 
@@ -200,7 +211,7 @@ function insertUser(data,socket) {
 					emit(socket, 'response_subscribe', { 'error_code' : 0, "msg" : "Registered"});
 				}
 				catch (e) { // non-standard
-					emit(socket, 'response_subscribe', { 'error_code' : 1, "msg" : "Already used login !"});
+					emit(socket, 'response_subscribe', { 'error_code' : 1, "msg" : "Username taken."});
 				}
 			db.close();
 		});
@@ -232,7 +243,7 @@ function check_authentification(data,socket) {
 				emit(socket, 'response_connect', { 'error_code' : 0, "msg" : "Connected", "player_name" : data.pseudo} );
 			}
 			if (!found) {
-				emit(socket, 'response_connect', { 'error_code' : 1, "msg" : "Authentification failed !"});
+				emit(socket, 'response_connect', { 'error_code' : 1, "msg" : "Username or password is incorrect."});
 			}
 			db.close();
 		});
@@ -264,7 +275,7 @@ function create_room(data, socket){
 				}
 				catch (e) { // non-standard
 					console.log(e.name + ': ' + e.message);
-					emit(socket, 'response_create', { 'error_code' : 1, "msg" : "Creation fail"});
+					emit(socket, 'response_create', { 'error_code' : 1, "msg" : "Room name already used."});
 				}
 			db.close();
 		});
@@ -296,7 +307,7 @@ function create_solo_room(data, socket){
 				}
 				catch (e) { // non-standard
 					console.log(e.name + ': ' + e.message);
-					emit(socket, 'create_solo_room_response', { 'error_code' : 1, "msg" : "Creation fail"});
+					emit(socket, 'create_solo_room_response', { 'error_code' : 1, "msg" : "Room name already used."});
 				}
 			db.close();
 		});
