@@ -136,7 +136,7 @@ listener.sockets.on('connection', function(socket){
     socket.on('character_choice',function(data){
 		console.log("==========");
 		console.log("Received character_choice", JSON.stringify(data));
-		listener.sockets.in(data.room_name).emit('character_choice_response', data);		
+		emit_broadcast(data.room_name, 'character_choice_response', data);		
     });
 
 	/*** Start the game ***/
@@ -144,20 +144,20 @@ listener.sockets.on('connection', function(socket){
 		console.log("==========");
 		console.log("Received game_start", JSON.stringify(data));
         set_room_invisible(data);
-        listener.sockets.in(data.room_name).emit('game_start_response', {"error_code": 0 });
+		emit_broadcast(data.room_name, 'game_start_response', {"error_code": 0 });	
     });
 
     socket.on("character_timeout_ended", function(data){
 		console.log("==========");
 		console.log("Received character_timeout_ended", JSON.stringify(data));
-         listener.sockets.in(data.room_name).emit('character_timeout_ended_response', {"error_code": 0 });
+		emit_broadcast(data.room_name, 'character_timeout_ended_response', {"error_code": 0 });	
     });
 
     /*** User data distribution on the room ***/
     socket.on('character_position', function(data){
 		console.log("==========");
 		console.log("Received character_position", JSON.stringify(data));
-        listener.sockets.in(data.room_name).emit('character_position_response', data);
+		emit_broadcast(data.room_name, 'character_position_response', data);	
     });
 
 	// En cas de problème
@@ -168,10 +168,17 @@ listener.sockets.on('connection', function(socket){
 });
 
 function emit(socket, title, message) {
+	socket.emit(title, message);    
 	console.log("==========");
 	console.log("Sending " + title);
 	console.log(JSON.stringify(message));
-	socket.emit(title, message);    
+}
+
+function emit_broadcast(channel, title, message) {
+	listener.sockets.in(channel).emit(title, message);
+	console.log("==========");
+	console.log("Broadcasting on channel " + channel);
+	console.log(title + " : " + JSON.stringify(message));  
 }
 
 function emit_list_room(socket){
@@ -189,6 +196,12 @@ function emit_list_room(socket){
                     "slot_empty" : doc.slot_empty,
                     "GPS" : doc.GPS
                 });
+                if(doc.room_password!=null) {
+                    data.push({ "is_password" : true });
+                }
+                else {
+                    data.push({ "is_password" : false });
+                }
             }
             emit(socket, 'list_room', {'error_code' : 0, "rooms" : data});
             db.close();
@@ -339,7 +352,7 @@ function join_room(data, socket){
     						});
                         socket.join(data.room_name); //subscribe to the pub sub
                         emit(socket, 'response_join', { 'error_code' : 0, "msg" : "Join successful"});
-						setTimeout(function() { listener.sockets.in(data.room_name).emit('list_player',doc.list_players); }, 100);                        
+						setTimeout(function() { emit_broadcast(data.room_name, 'list_player', doc.list_players); }, 100);                        
                     }
                     else {
     					emit(socket, 'response_join', { 'error_code' : 2, "msg" : "Room full"});
@@ -369,7 +382,7 @@ function leave_room(data, socket){
 				found = true;
                 if(doc.host==data.player_name){
                     console.log("Host left the game, kicking players off the room");
-                    listener.sockets.in(data.room_name).emit('kick', data);
+					emit_broadcast(data.room_name, 'kick', data);
                 }
                 doc.slot_empty++;
                 if(doc.slot_empty==doc.number_players_max){
@@ -395,7 +408,7 @@ function leave_room(data, socket){
                             }                        
                         });
                     console.log("Player list : " + doc.list_players);
-                    listener.sockets.in(data.room_name).emit('list_player',doc.list_players);
+					emit_broadcast(data.room_name, 'list_player', doc.list_players);
                 }
                 emit(socket, 'response_quit', { 'error_code' : 0, "msg" : "Successfully left the room"});
                 socket.leave(data.room_name);
