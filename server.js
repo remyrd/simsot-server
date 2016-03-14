@@ -76,7 +76,7 @@ var listener = io.listen(server);
 listener.sockets.on('connection', function(socket){
 
     socket.on('subscribe', function(data){
-		console.log("Received subscribe" + data);
+		console.log("Received subscribe" + JSON.stringify(data));
         if(data.pseudo != null && data.password != null && data.pseudo != "" && data.password != ""){
             insertUser(data,socket);   
         }
@@ -86,66 +86,65 @@ listener.sockets.on('connection', function(socket){
     });
 
     socket.on('connect_user', function(data){
-		console.log("Received connect_user" + data);
+		console.log("Received connect_user" + JSON.stringify(data));
         check_authentification(data,socket);
     });
 	
     socket.on('get_list_room', function(data){
         // TODO : a prendre en parametre la pos gps et renvoyer les rooms trié par distances
-		console.log("Received get_list_room" + data);
+		console.log("Received get_list_room" + JSON.stringify(data));
         emit_list_room(socket);
     });
 
     socket.on('new_room', function(data){
-		console.log("Received new_room" + data);
+		console.log("Received new_room" + JSON.stringify(data));
         create_room(data,socket);
     });
 
     socket.on('create_solo_room', function(data){
-		console.log("Received create_solo_room" + data);
+		console.log("Received create_solo_room" + JSON.stringify(data));
         create_solo_room(data,socket);
     });
 
     /*** User creates/joins room ***/
     socket.on('join', function(data){
-		console.log("Received join" + data);
+		console.log("Received join" + JSON.stringify(data));
         join_room(data,socket);
     });
         
         
     /*** User leaves room ***/
     socket.on('leave',function(data){
-		console.log("Received leave" + data);
+		console.log("Received leave" + JSON.stringify(data));
         leave_room(data,socket);
     });
 
 	/*** Player in a room kicked if host leaves room ***/
     socket.on('kick',function(data){
-		console.log("Received kick" + data);
-        console.log("kicking player");
+		console.log("Received kick" + JSON.stringify(data));
     });
 
 	/*** Character selection screen ***/
     socket.on('character_choice',function(data){
-		console.log("Received character_choice" + data);
+		console.log("Received character_choice" + JSON.stringify(data));
 		listener.sockets.in(data.room_name).emit('character_choice_response', data);		
     });
 
 	/*** Start the game ***/
     socket.on('game_start', function(data){
-		console.log("Received game_start" + data);
+		console.log("Received game_start" + JSON.stringify(data));
         set_room_invisible(data);
         listener.sockets.in(data.room_name).emit('game_start_response', {"error_code": 0 });
     });
 
     socket.on("character_timeout_ended", function(data){
-		console.log("Received character_timeout_ended" + data);
+		console.log("Received character_timeout_ended" + JSON.stringify(data));
          listener.sockets.in(data.room_name).emit('character_timeout_ended_response', {"error_code": 0 });
     });
 
     /*** User data distribution on the room ***/
     socket.on('character_position', function(data){
-		console.log("Received character_position" + data);
+		console.log("Received character_position" + JSON.stringify(data));
         listener.sockets.in(data.room_name).emit('character_position_response', data);
     });
 
@@ -159,7 +158,7 @@ listener.sockets.on('connection', function(socket){
 function emit(socket, title, message) {
 	console.log("=====");
 	console.log("Sending " + title);
-	console.log(message);
+	console.log(JSON.stringify(message));
 	console.log("=====");
 	socket.emit(title, message);    
 }
@@ -274,7 +273,6 @@ function create_room(data, socket){
 
 function create_solo_room(data, socket){
 	var room_name = data.player_name + "_" + Date.now();
-    console.log("Trying to insert solo room ", room_name, " with player ", data.player_name);
 	var tab_player = [];
 	tab_player.push(data.player_name);
 	mongoClient.connect(MONGOLAB_URI, function(err, db) {
@@ -294,7 +292,6 @@ function create_solo_room(data, socket){
 				try {
 					assert.equal(err, null);
                     socket.join(room_name);
-					console.log("Inserted Room !!!");
 					emit(socket, 'create_solo_room_response', { 'error_code' : 0, "msg" : "Create successful", "room_name" : room_name});	
 				}
 				catch (e) { // non-standard
@@ -360,15 +357,13 @@ function leave_room(data, socket){
             if (doc != null) {
 				found = true;
                 if(doc.host==data.player_name){
-                    console.log("Host left the game");
-                    console.log("Kicking players off the room");
+                    console.log("Host left the game, kicking players off the room");
                     listener.sockets.in(data.room_name).emit('kick', data);
                 }
                 doc.slot_empty++;
                 if(doc.slot_empty==doc.number_players_max){
                     //last player left the room delete the room directly
-                    console.log('No more player in the room');
-                    console.log('Deleting the room');
+                    console.log('No more player in the room, deleting the room');
                     db.collection('Room').remove( { "room_name": data.room_name } );
                     console.log('Room deleted');
                 }
