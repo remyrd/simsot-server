@@ -105,23 +105,23 @@ listener.sockets.on('connection', function(socket){
 		  console.log("==========");
 		  console.log("Received new_room", JSON.stringify(data));
       console.log("Generating map");
-      mapLayout.generateMapLayout(data.latitude,data.longitude,15,function(layout){
-        if (data.latitude==null || data.longitude==null)
-          create_room(data, socket, null);
-        else
-          create_room(data, socket, layout);
-      });
+      if (data.longitude==null || data.latitude=="undefined")
+        mapLayout.generateMapLayout(data.longitude,data.latitude,15,function(layout){
+          create_room(data,socket,layout);
+        });
+      else
+        create_room(data,socket,"undefined");
     });
 
     socket.on('create_solo_room', function(data){
 		  console.log("==========");
 		  console.log("Received create_solo_room", JSON.stringify(data));
-      mapLayout.generateMapLayout(data.longitude,data.latitude,15,function(layout){
-        if (data.longitude==null || data.latitude==null)
-          create_solo_room(data, socket, null);
-        else
+      if (data.longitude==null || data.latitude=="undefined")
+        mapLayout.generateMapLayout(data.longitude,data.latitude,15,function(layout){
           create_solo_room(data,socket,layout);
-      });
+        });
+      else
+        create_solo_room(data,socket,"undefined");
     });
 
     /*** User creates/joins room ***/
