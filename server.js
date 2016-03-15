@@ -102,15 +102,23 @@ listener.sockets.on('connection', function(socket){
     });
 
     socket.on('new_room', function(data){
-		console.log("==========");
-		console.log("Received new_room", JSON.stringify(data));
-        create_room(data,socket);
+		  console.log("==========");
+		  console.log("Received new_room", JSON.stringify(data));
+      console.log("Generating map");
+      mapLayout.generateMapLayout(data.x,data.y,15,function(layout){
+        emit(socket,'map', {"map":layout});
+        create_room(data, socket);
+      })
+      create_room(data,socket);
     });
 
     socket.on('create_solo_room', function(data){
-		console.log("==========");
-		console.log("Received create_solo_room", JSON.stringify(data));
+		  console.log("==========");
+		  console.log("Received create_solo_room", JSON.stringify(data));
+      mapLayout.generateMapLayout(data.x,data.y,15,function(layout){
+        emit(socket,'map',{"map": layout});
         create_solo_room(data,socket);
+      });
     });
 
     /*** User creates/joins room ***/
@@ -167,12 +175,6 @@ listener.sockets.on('connection', function(socket){
 		console.error(err.stack); 
 		//socket.destroy(); // end/disconnect/close/destroy ?
 	});
-
-  socket.on('map', function(data){
-    mapLayout.generateMapLayout(data.x, data.y, data.zoom, function(layout){
-      emit_broadcast(data.room_name, 'map_layout', layout);
-    });
-  });
 });
 
 function emit(socket, title, message) {
@@ -275,7 +277,7 @@ function check_authentification(data,socket) {
 	});
 };
 
-function create_room(data, socket){
+function create_room(data, socket, layout){
 	var tab_player = [];
 	tab_player.push(data.host);
 	mongoClient.connect(MONGOLAB_URI, function(err, db) {
@@ -286,7 +288,7 @@ function create_room(data, socket){
 				"host" : data.host,
 				"list_players" : tab_player,
 				"number_players_max" : 5,
-				"GPS" : data.GPS,
+				"GPS" : layout,
 				"distance_min" : data.distance_min,
 				"slot_empty" : 4,
                 "visibility" : true,
@@ -295,9 +297,9 @@ function create_room(data, socket){
 			function(err, result) {
 				try {
 					assert.equal(err, null);
-                    socket.join(data.room_name);
+          socket.join(data.room_name);
 					emit(socket, 'response_create', { 'error_code' : 0, "msg" : "Create successful", "room_name" : data.room_name, "host" : data.host});	
-                    emit(socket, 'list_player', tab_player);
+          emit(socket, 'list_player', tab_player);
 				}
 				catch (e) { // non-standard
 					console.log(e.name + ': ' + e.message);
@@ -320,7 +322,7 @@ function create_solo_room(data, socket){
 				"host" : data.player_name,
 				"list_players" : tab_player,
 				"number_players_max" : 5,
-				"GPS" : data.GPS,
+				"GPS" : null,
 				"distance_min" : data.distance_min,
 				"slot_empty" : 4,
                 "visibility" : false,
@@ -329,8 +331,8 @@ function create_solo_room(data, socket){
 			function(err, result) {
 				try {
 					assert.equal(err, null);
-                    socket.join(room_name);
-					emit(socket, 'create_solo_room_response', { 'error_code' : 0, "msg" : "Create successful", "room_name" : room_name});	
+          socket.join(room_name);
+					emit(socket, 'create_solo_room_response', { 'error_code' : 0, "msg" : "Create successful", "room_name" : room_name});
 				}
 				catch (e) { // non-standard
 					console.log(e.name + ': ' + e.message);
