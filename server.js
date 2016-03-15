@@ -106,7 +106,7 @@ listener.sockets.on('connection', function(socket){
 		  console.log("Received new_room", JSON.stringify(data));
       console.log("Generating map");
       if (data.longitude!=null && data.latitude!="undefined")
-        mapLayout.generateMapLayout(data.longitude,data.latitude,15,function(layout){
+        mapLayout.generateMapLayout(data.latitude,data.longitude,15,function(layout){
           console.log(layout);
           create_room(data,socket,layout);
         });
@@ -118,7 +118,7 @@ listener.sockets.on('connection', function(socket){
 		  console.log("==========");
 		  console.log("Received create_solo_room", JSON.stringify(data));
       if (data.longitude!=null && data.latitude!="undefined")
-        mapLayout.generateMapLayout(data.longitude,data.latitude,15,function(layout){
+        mapLayout.generateMapLayout(data.latitude,data.longitude,15,function(layout){
           console.log(layout);
           create_solo_room(data,socket,layout);
         });
