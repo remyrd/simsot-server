@@ -190,17 +190,21 @@ function emit_list_room(socket){
             assert.equal(err, null);
             for(i=0; i<docs.length; i++){
                 var doc = docs[i];
-                data.push({
+                if(doc.room_password!=null) {
+                    data.push({
                     "host" : doc.host,
                     "room_name" : doc.room_name,
                     "slot_empty" : doc.slot_empty,
-                    "GPS" : doc.GPS
-                });
-                if(doc.room_password!=null) {
-                    data.push({ "is_password" : true });
+                    "GPS" : doc.GPS,
+                    "is_password" : true });
                 }
                 else {
-                    data.push({ "is_password" : false });
+                    data.push({
+                    "host" : doc.host,
+                    "room_name" : doc.room_name,
+                    "slot_empty" : doc.slot_empty,
+                    "GPS" : doc.GPS,
+                    "is_password" : false });
                 }
             }
             emit(socket, 'list_room', {'error_code' : 0, "rooms" : data});
