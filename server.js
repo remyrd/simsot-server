@@ -286,7 +286,7 @@ function create_room(data, socket){
 				"number_players_max" : 5,
 				"GPS" : data.GPS,
 				"distance_min" : data.distance_min,
-				"slot_empty" : data.number_players_max -1,
+				"slot_empty" : 4,
                 "visibility" : true
 			},
 			function(err, result) {
@@ -319,7 +319,7 @@ function create_solo_room(data, socket){
 				"number_players_max" : 5,
 				"GPS" : data.GPS,
 				"distance_min" : data.distance_min,
-				"slot_empty" : data.number_players_max -1,
+				"slot_empty" : 4,
                 "visibility" : false
 			},
 			function(err, result) {
