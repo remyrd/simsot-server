@@ -2,7 +2,13 @@ var http = require("http");
 var url = require('url');
 var fs = require('fs');
 var assert = require('assert');
-
+var PNG = require('png-coder').PNG;
+var Stream = require('stream');
+var map = require('./map.js');
+// *** Exemple d'utilisation map ***
+/* *** tableau 480x630 ***
+var layout = map.generateMapLayout(gps_x,gps_y);
+*** */
 var io = require('socket.io');
 var mongoClient = require('mongodb').MongoClient;
 
