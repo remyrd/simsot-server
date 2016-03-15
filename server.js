@@ -287,7 +287,8 @@ function create_room(data, socket){
 				"GPS" : data.GPS,
 				"distance_min" : data.distance_min,
 				"slot_empty" : 4,
-                "visibility" : true
+                "visibility" : true,
+                "is_password" : data.is_password
 			},
 			function(err, result) {
 				try {
@@ -320,7 +321,8 @@ function create_solo_room(data, socket){
 				"GPS" : data.GPS,
 				"distance_min" : data.distance_min,
 				"slot_empty" : 4,
-                "visibility" : false
+                "visibility" : false,
+                "is_password" : data.is_password
 			},
 			function(err, result) {
 				try {
