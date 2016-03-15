@@ -106,18 +106,15 @@ listener.sockets.on('connection', function(socket){
 		  console.log("Received new_room", JSON.stringify(data));
       console.log("Generating map");
       mapLayout.generateMapLayout(data.x,data.y,15,function(layout){
-        emit(socket,'map', {"map":layout});
-        create_room(data, socket);
-      })
-      create_room(data,socket);
+        create_room(data, socket, layout);
+      });
     });
 
     socket.on('create_solo_room', function(data){
 		  console.log("==========");
 		  console.log("Received create_solo_room", JSON.stringify(data));
       mapLayout.generateMapLayout(data.x,data.y,15,function(layout){
-        emit(socket,'map',{"map": layout});
-        create_solo_room(data,socket);
+        create_solo_room(data, socket, layout);
       });
     });
 
@@ -205,7 +202,7 @@ function emit_list_room(socket){
                     "host" : doc.host,
                     "room_name" : doc.room_name,
                     "slot_empty" : doc.slot_empty,
-                    "GPS" : doc.GPS,
+                    "map" : doc.GPS,
                     "is_password" : true });
                 }
                 else {
@@ -213,7 +210,7 @@ function emit_list_room(socket){
                     "host" : doc.host,
                     "room_name" : doc.room_name,
                     "slot_empty" : doc.slot_empty,
-                    "GPS" : doc.GPS,
+                    "map" : doc.GPS,
                     "is_password" : false });
                 }
             }
@@ -298,7 +295,7 @@ function create_room(data, socket, layout){
 				try {
 					assert.equal(err, null);
           socket.join(data.room_name);
-					emit(socket, 'response_create', { 'error_code' : 0, "msg" : "Create successful", "room_name" : data.room_name, "host" : data.host});	
+					emit(socket, 'response_create', { 'error_code' : 0, "msg" : "Create successful", "room_name" : data.room_name, "host" : data.host, "map": layout});
           emit(socket, 'list_player', tab_player);
 				}
 				catch (e) { // non-standard
@@ -310,7 +307,7 @@ function create_room(data, socket, layout){
 	});
 }
 
-function create_solo_room(data, socket){
+function create_solo_room(data, socket, layout){
 	var room_name = data.player_name + "_" + Date.now();
 	var tab_player = [];
 	tab_player.push(data.player_name);
@@ -322,7 +319,7 @@ function create_solo_room(data, socket){
 				"host" : data.player_name,
 				"list_players" : tab_player,
 				"number_players_max" : 5,
-				"GPS" : null,
+				"GPS" : layout,
 				"distance_min" : data.distance_min,
 				"slot_empty" : 4,
                 "visibility" : false,
@@ -332,7 +329,7 @@ function create_solo_room(data, socket){
 				try {
 					assert.equal(err, null);
           socket.join(room_name);
-					emit(socket, 'create_solo_room_response', { 'error_code' : 0, "msg" : "Create successful", "room_name" : room_name});
+					emit(socket, 'create_solo_room_response', { 'error_code' : 0, "msg" : "Create successful", "room_name" : room_name, "map": layout});
 				}
 				catch (e) { // non-standard
 					console.log(e.name + ': ' + e.message);

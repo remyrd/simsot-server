@@ -7,7 +7,7 @@ var PNG = require('png-coder').PNG;
 module.exports = {
 
   generateMapLayout: function(pos_x, pos_y, zoom, callback){
-    var URL_GOOGLE = "/maps/api/staticmap?center="+pos_x+","+pos_y+"&zoom="+zoom+"&format=png8&sensor=false&size=480x630&maptype=roadmap&style=feature:road.arterial|element:geometry|color:0x00ff00&style=feature:administrative|visibility:off&style=feature:landscape|visibility:off&style=feature:poi|visibility:off&style=feature:transit|visibility:off&style=feature:water|visibility:off&style=feature:road.highway|visibility:off&style=feature:road.local|visibility:off&style=feature:road.arterial|element:labels|visibility:off&key=AIzaSyDxF7kGBnlOpDMp6wf-pMN8HCrRiMKIMVg";
+    var URL_GOOGLE = "/maps/api/staticmap?center="+pos_x+","+pos_y+"&zoom="+zoom+"&format=png8&sensor=false&size=540x630&maptype=roadmap&style=feature:road.arterial|element:geometry|color:0x00ff00&style=feature:administrative|visibility:off&style=feature:landscape|visibility:off&style=feature:poi|visibility:off&style=feature:transit|visibility:off&style=feature:water|visibility:off&style=feature:road.highway|visibility:off&style=feature:road.local|visibility:off&style=feature:road.arterial|element:labels|visibility:off&key=AIzaSyDxF7kGBnlOpDMp6wf-pMN8HCrRiMKIMVg";
     var rstream = new Stream.Readable();
     rstream._read = function noop() {};
     var buff=[];
