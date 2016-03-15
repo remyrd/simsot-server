@@ -106,11 +106,11 @@ listener.sockets.on('connection', function(socket){
 		  console.log("Received new_room", JSON.stringify(data));
       
       if (data.longitude!=null && data.latitude!= null){
-        console.log("Generating map");
-        mapLayout.generateMapLayout(data.latitude,data.longitude,15,function(layout){
-          console.log(layout);
-          create_room(data,socket,layout);
-        });
+            console.log("Generating map");
+            mapLayout.generateMapLayout(data.latitude,data.longitude,15,function(layout){
+              console.log(layout);
+              create_room(data,socket,layout);
+            });
       } else{
         create_room(data,socket, null);
       }        
@@ -120,10 +120,10 @@ listener.sockets.on('connection', function(socket){
 		  console.log("==========");
 		  console.log("Received create_solo_room", JSON.stringify(data));
       if (data.longitude!=null && data.latitude!= null){
-        mapLayout.generateMapLayout(data.latitude,data.longitude,15,function(layout){
-          console.log(layout);
-          create_solo_room(data,socket,layout);
-        });
+            mapLayout.generateMapLayout(data.latitude,data.longitude,15,function(layout){
+              console.log(layout);
+              create_solo_room(data,socket,layout);
+            });
         } else{
             create_solo_room(data,socket, null);
         }        
@@ -209,20 +209,36 @@ function emit_list_room(socket){
             for(i=0; i<docs.length; i++){
                 var doc = docs[i];
                 if(doc.room_password!=null) {
-                    data.push({
-                    "host" : doc.host,
-                    "room_name" : doc.room_name,
-                    "slot_empty" : doc.slot_empty,
-                    "map" : doc.GPS,
-                    "is_password" : true });
+                    if(doc.GPS == null){
+                        data.push({
+                        "host" : doc.host,
+                        "room_name" : doc.room_name,
+                        "slot_empty" : doc.slot_empty,
+                        "is_password" : true });
+                    } else{
+                        data.push({
+                        "host" : doc.host,
+                        "room_name" : doc.room_name,
+                        "slot_empty" : doc.slot_empty,
+                        "map" : doc.GPS,
+                        "is_password" : true });
+                    }                    
                 }
                 else {
-                    data.push({
-                    "host" : doc.host,
-                    "room_name" : doc.room_name,
-                    "slot_empty" : doc.slot_empty,
-                    "map" : doc.GPS,
-                    "is_password" : false });
+                     if(doc.GPS == null){
+                        data.push({
+                        "host" : doc.host,
+                        "room_name" : doc.room_name,
+                        "slot_empty" : doc.slot_empty,
+                        "is_password" : false });
+                     }else{
+                        data.push({
+                        "host" : doc.host,
+                        "room_name" : doc.room_name,
+                        "slot_empty" : doc.slot_empty,
+                        "map" : doc.GPS,
+                        "is_password" : false });
+                     }                    
                 }
             }
             emit(socket, 'list_room', {'error_code' : 0, "rooms" : data});
@@ -305,9 +321,15 @@ function create_room(data, socket, layout){
 			function(err, result) {
 				try {
 					assert.equal(err, null);
-          socket.join(data.room_name);
-					emit(socket, 'response_create', { 'error_code' : 0, "msg" : "Create successful", "room_name" : data.room_name, "host" : data.host, "map": layout});
-          emit(socket, 'list_player', tab_player);
+                    socket.join(data.room_name);
+
+                    if(layout != null){
+                        emit(socket, 'response_create', { 'error_code' : 0, "msg" : "Create successful", "room_name" : data.room_name, "host" : data.host, "map": layout});
+                    } else{
+                        emit(socket, 'response_create', { 'error_code' : 0, "msg" : "Create successful", "room_name" : data.room_name, "host" : data.host});
+                    }
+					
+                    emit(socket, 'list_player', tab_player);
 				}
 				catch (e) { // non-standard
 					console.log(e.name + ': ' + e.message);
@@ -339,8 +361,13 @@ function create_solo_room(data, socket, layout){
 			function(err, result) {
 				try {
 					assert.equal(err, null);
-          socket.join(room_name);
-					emit(socket, 'create_solo_room_response', { 'error_code' : 0, "msg" : "Create successful", "room_name" : room_name, "map": layout});
+                    socket.join(room_name);
+                    if(layout != null){
+                        emit(socket, 'create_solo_room_response', { 'error_code' : 0, "msg" : "Create successful", "room_name" : room_name, "map": layout});
+                    } else{
+                        emit(socket, 'create_solo_room_response', { 'error_code' : 0, "msg" : "Create successful", "room_name" : room_name});
+                    }
+					
 				}
 				catch (e) { // non-standard
 					console.log(e.name + ': ' + e.message);
