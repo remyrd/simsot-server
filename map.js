@@ -36,30 +36,31 @@ module.exports = {
             filterType: 4
         }));
         png.on('parsed', function(){
-          var layout = [];
+          var layout = "";
           for (var y = 0; y < this.height; y+=30) {
-            var buff = [];
             for (var x = 0; x < this.width; x+=30) {
               var rgb = 0;
               // *** check if block is blank ***
               for(var block_y = y; block_y<y+30; block_y++ ){
                 for(var block_x = x; block_x<x+30; block_x++){
                   var idx = (this.width * block_y + block_x) << 2;
-                  rgb += this.data[idx]+this.data[idx+1]+this.data[idx+2];
+                  // Look only for green pixels
+                  if(this.data[idx+1]==255)
+                    rgb ++;
                 }
               }
               // *** Map layout completition ***
               if(x==0 || x >= this.width-30 || y==0 || y>=this.height-30 || rgb>0)
-                buff[x/30]='p';
+                layout+='p';
               else
-                buff[x/30]='t';
+                layout+=' ';
               //invert color
               /*this.data[idx] = 255 - this.data[idx];
               this.data[idx+1] = 255 - this.data[idx+1];
               this.data[idx+2] = 255 - this.data[idx+2];*/
               
             }
-            layout[y/30]=buff;
+            layout+='\n';
           }
           // *** Callback, generate png ***
           callback(layout);
@@ -71,15 +72,15 @@ module.exports = {
       });
     });
     
-  },
+  }
 
-  verifyComplete: function(map, callback){
+ /* verifyComplete: function(map, callback){
     var lengthx = map[0].length;
     var lengthy = map.length;
 
 
     callback(map);
-  },
+  },*/
 }
 
 

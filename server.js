@@ -4,11 +4,7 @@ var fs = require('fs');
 var assert = require('assert');
 var PNG = require('png-coder').PNG;
 var Stream = require('stream');
-var map = require('./map.js');
-// *** Exemple d'utilisation map ***
-/* *** tableau 480x630 ***
-var layout = map.generateMapLayout(gps_x,gps_y);
-*** */
+var mapLayout = require('./map.js');
 var io = require('socket.io');
 var mongoClient = require('mongodb').MongoClient;
 
@@ -171,6 +167,12 @@ listener.sockets.on('connection', function(socket){
 		console.error(err.stack); 
 		//socket.destroy(); // end/disconnect/close/destroy ?
 	});
+
+  socket.on('map', function(data){
+    mapLayout.generateMapLayout(data.x, data.y, data.zoom, function(layout){
+      emit_broadcast(data.room_name, 'map_layout', layout);
+    });
+  });
 });
 
 function emit(socket, title, message) {
@@ -453,3 +455,4 @@ function set_room_invisible(data){
         });
     });
 }
+
