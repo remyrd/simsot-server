@@ -53,7 +53,7 @@ module.exports = {
               if(x==0 || x >= this.width-30 || y==0 || y>=this.height-30 || rgb>0)
                 layout+='p';
               else
-                layout+=' ';
+                layout+='t';
               //invert color
               /*this.data[idx] = 255 - this.data[idx];
               this.data[idx+1] = 255 - this.data[idx+1];
