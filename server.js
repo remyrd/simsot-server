@@ -348,7 +348,7 @@ function join_room(data, socket){
     mongoClient.connect(MONGOLAB_URI, function(err, db) {
         assert.equal(null, err);
 		var found = false;
-        var cursor = db.collection('Room').find( { "room_name": data.room_name } );
+        var cursor = db.collection('Room').find( { "room_name": data.room_name,"password" : data.password } );
         cursor.each(function(err, doc) {
             assert.equal(err, null);
             if (doc != null) {
