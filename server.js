@@ -387,7 +387,7 @@ function join_room(data, socket){
         cursor.each(function(err, doc) {
             assert.equal(err, null);
             if (doc != null) {
-                if(doc.password==data.password){
+                if(doc.room_password==data.password){
                     if(doc.list_players.indexOf(data.player_name)== -1){
                     found = true;
                         if(doc.slot_empty > 0){
