@@ -383,36 +383,42 @@ function join_room(data, socket){
     mongoClient.connect(MONGOLAB_URI, function(err, db) {
         assert.equal(null, err);
 		var found = false;
-        var cursor = db.collection('Room').find( { "room_name": data.room_name,"password" : data.password } );
+        var cursor = db.collection('Room').find( { "room_name": data.room_name } );
         cursor.each(function(err, doc) {
             assert.equal(err, null);
             if (doc != null) {
-                if(doc.list_players.indexOf(data.player_name)== -1){
-    				found = true;
-                    if(doc.slot_empty > 0){
-                        doc.list_players.push(data.player_name);
-                        doc.slot_empty--;
-                        console.log('Nombre de slot vide restant :', doc.slot_empty);
-                        db.collection('Room').update(
-                            { "room_name": data.room_name },
-                            {
-    							$set: {
-    								"list_players": doc.list_players,
-    								"slot_empty": doc.slot_empty
-    							}                        
-    						});
-                        socket.join(data.room_name); //subscribe to the pub sub
-                        emit(socket, 'response_join', { 'error_code' : 0, "msg" : "Join successful"});
-						setTimeout(function() { emit_broadcast(data.room_name, 'list_player', doc.list_players); }, 100);                        
+                if(doc.password==data.password){
+                    if(doc.list_players.indexOf(data.player_name)== -1){
+                    found = true;
+                        if(doc.slot_empty > 0){
+                            doc.list_players.push(data.player_name);
+                            doc.slot_empty--;
+                            console.log('Nombre de slot vide restant :', doc.slot_empty);
+                            db.collection('Room').update(
+                                { "room_name": data.room_name },
+                                {
+                                    $set: {
+                                        "list_players": doc.list_players,
+                                        "slot_empty": doc.slot_empty
+                                    }                        
+                                });
+                            socket.join(data.room_name); //subscribe to the pub sub
+                            emit(socket, 'response_join', { 'error_code' : 0, "msg" : "Join successful"});
+                            setTimeout(function() { emit_broadcast(data.room_name, 'list_player', doc.list_players); }, 100);                        
+                        }
+                        else {
+                            emit(socket, 'response_join', { 'error_code' : 2, "msg" : "Room full"});
+                        }
                     }
-                    else {
-    					emit(socket, 'response_join', { 'error_code' : 2, "msg" : "Room full"});
+                    else{
+                       emit(socket, 'response_join', { 'error_code' : 3, "msg" : "Player already in the room"}); 
                     }
                 }
                 else{
-                   emit(socket, 'response_join', { 'error_code' : 3, "msg" : "Player already in the room"}); 
+                    emit(socket, 'response_join', { 'error_code' : 4, "msg" : "Password doesn t match"}); 
                 }
             }
+                
             if (!found) {
 				emit(socket, 'response_join', { 'error_code' : 1, "msg" : "Room not found"});
             }
