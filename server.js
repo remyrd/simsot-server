@@ -304,6 +304,9 @@ function check_authentification(data,socket) {
 function create_room(data, socket, layout){
 	var tab_player = [];
 	tab_player.push(data.host);
+    if(data.room_password==null){
+        data.room_password="";
+    }
 	mongoClient.connect(MONGOLAB_URI, function(err, db) {
 		assert.equal(null, err);
 			db.collection('Room').insertOne({
