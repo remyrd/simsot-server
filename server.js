@@ -304,9 +304,6 @@ function check_authentification(data,socket) {
 function create_room(data, socket, layout){
 	var tab_player = [];
 	tab_player.push(data.host);
-    if(data.room_password==null){
-        data.room_password="";
-    }
 	mongoClient.connect(MONGOLAB_URI, function(err, db) {
 		assert.equal(null, err);
 			db.collection('Room').insertOne({
@@ -390,7 +387,7 @@ function join_room(data, socket){
         cursor.each(function(err, doc) {
             assert.equal(err, null);
             if (doc != null) {
-                if(doc.room_password==data.room_password){
+                if(doc.room_password==data.room_password||doc.room_password==null){
                     if(doc.list_players.indexOf(data.player_name)== -1){
                     found = true;
                         if(doc.slot_empty > 0){
