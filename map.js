@@ -1,17 +1,14 @@
 var Stream = require('stream');
 var http = require("http");
-var url = require('url');
 var fs = require('fs');
 var PNG = require('png-coder').PNG;
 
 module.exports = {
 
   generateMapLayout: function(pos_x, pos_y, zoom, callback){
-    var URL_GOOGLE = "/maps/api/staticmap?center="+pos_x+","+pos_y+"&zoom="+zoom+"&format=png8&sensor=false&size=510x630&maptype=roadmap&style=feature:road.arterial|element:geometry|color:0x00ff00&style=feature:administrative|visibility:off&style=feature:landscape|visibility:off&style=feature:poi|visibility:off&style=feature:transit|visibility:off&style=feature:water|visibility:off&style=feature:road.highway|visibility:off&style=feature:road.local|visibility:off&style=feature:road.arterial|element:labels|visibility:off&key=AIzaSyDxF7kGBnlOpDMp6wf-pMN8HCrRiMKIMVg";
+    var URL_GOOGLE = "/maps/api/staticmap?center="+pos_x+","+pos_y+"&zoom="+zoom+"&format=png8&sensor=false&size=480x630&maptype=roadmap&style=feature:road.arterial|element:geometry|color:0x00ff00&style=feature:administrative|visibility:off&style=feature:landscape|visibility:off&style=feature:poi|visibility:off&style=feature:transit|visibility:off&style=feature:water|visibility:off&style=feature:road.highway|visibility:off&style=feature:road.local|visibility:off&style=feature:road.arterial|element:labels|visibility:off&key=AIzaSyDxF7kGBnlOpDMp6wf-pMN8HCrRiMKIMVg";
     var rstream = new Stream.Readable();
     rstream._read = function noop() {};
-    var buff=[];
-    var layout="";
 
     //*** Request the server ***
     var getResponse = http.get({
@@ -54,11 +51,6 @@ module.exports = {
                 layout+='p';
               else
                 layout+='t';
-              //invert color
-              /*this.data[idx] = 255 - this.data[idx];
-              this.data[idx+1] = 255 - this.data[idx+1];
-              this.data[idx+2] = 255 - this.data[idx+2];*/
-              
             }
             layout+='\n';
           }
@@ -71,16 +63,7 @@ module.exports = {
         console.log(err);
       });
     });
-    
   }
-
- /* verifyComplete: function(map, callback){
-    var lengthx = map[0].length;
-    var lengthy = map.length;
-
-
-    callback(map);
-  },*/
 }
 
 
