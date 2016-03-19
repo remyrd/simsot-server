@@ -9,16 +9,18 @@ var io = require('socket.io');
 var mongoClient = require('mongodb').MongoClient;
 
 // Switch environment variables local/heroku
+var MONGOLAB_URI,
+    port
 switch(process.argv[2]){
     case "dev":
-        var MONGOLAB_URI = "mongodb://localhost:27017";
-        var port = 8001;
+        MONGOLAB_URI = "mongodb://localhost:27017";
+        port = 8001;
         console.log("development config");
         break;
 
     default:
-        var MONGOLAB_URI = process.env.MONGOLAB_URI;
-        var port = process.env.PORT;
+        MONGOLAB_URI = process.env.MONGOLAB_URI;
+        port = process.env.PORT;
         console.log("heroku config");
         break;
 }
@@ -183,6 +185,10 @@ listener.sockets.on('connection', function(socket){
 		console.error(err.stack); 
 		//socket.destroy(); // end/disconnect/close/destroy ?
 	});
+
+    socket.on('pellet', function(data){
+        emit_broadcast(data.room_name, 'pellet', data)
+    });
 });
 
 function emit(socket, title, message) {
