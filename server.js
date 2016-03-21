@@ -189,6 +189,19 @@ listener.sockets.on('connection', function(socket){
     socket.on('pellet', function(data){
         emit_broadcast(data.room_name, 'pellet', data)
     });
+
+    socket.on('leave_solo_room', function(data){
+        console.log("==========");
+        console.log("Received leave_solo_room", JSON.stringify(data));
+        delete_room_solo(data,socket);    
+    });
+
+    socket.on('leave_multi_room', function(data){
+        console.log("==========");
+        console.log("Received leave_multi_room", JSON.stringify(data));
+           console.log("To implement"); 
+    });
+    
 });
 
 function emit(socket, title, message) {
@@ -475,6 +488,29 @@ function leave_room(data, socket){
                 }
                 emit(socket, 'response_quit', { 'error_code' : 0, "msg" : "Successfully left the room"});
                 socket.leave(data.room_name);
+            }
+            if (!found) {
+                emit(socket, 'response_quit', { 'error_code' : 1, "msg" : "Room not found"});
+            }
+            db.close();
+        });
+    });
+}
+
+function delete_room_solo(data, socket){
+    // emit list player
+    mongoClient.connect(MONGOLAB_URI, function(err, db) {
+        assert.equal(null, err);
+        var found = false;
+        var cursor = db.collection('Room').find( { "room_name": data.room_name } );
+        cursor.each(function(err, doc) {
+            assert.equal(err, null);
+            if (doc != null) {
+                found = true;
+                console.log('Deleting the room');
+                db.collection('Room').remove( { "room_name": data.room_name } );
+                console.log('Room deleted');
+                emit(socket, 'response_quit', { 'error_code' : 0, "msg" : "Room deleted successfully"});
             }
             if (!found) {
                 emit(socket, 'response_quit', { 'error_code' : 1, "msg" : "Room not found"});
