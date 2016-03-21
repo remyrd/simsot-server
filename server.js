@@ -104,18 +104,18 @@ listener.sockets.on('connection', function(socket){
     });
 
     socket.on('new_room', function(data){
-		  console.log("==========");
-		  console.log("Received new_room", JSON.stringify(data));
+		console.log("==========");
+		console.log("Received new_room", JSON.stringify(data));
       
-      if (data.longitude!=null && data.latitude!= null){
-            console.log("Generating map");
-            mapLayout.generateMapLayout(data.latitude,data.longitude,15,function(layout){
-              console.log(layout);
-              create_room(data,socket,layout);
-            });
-      } else{
-        create_room(data,socket, null);
-      }        
+		if (data.longitude!=null && data.latitude!= null){
+			console.log("Generating map");
+			mapLayout.generateMapLayout(data.latitude,data.longitude,15,function(layout){
+				console.log(layout);
+				create_room(data,socket,layout);
+			});
+		} else{
+		create_room(data,socket, null);
+		}        
     });
 
     socket.on('create_solo_room', function(data){
@@ -175,9 +175,10 @@ listener.sockets.on('connection', function(socket){
 
     /*** User data distribution on the room ***/
     socket.on('character_position', function(data){
-		console.log("==========");
-		console.log("Received character_position", JSON.stringify(data));
-		emit_broadcast(data.room_name, 'character_position_response', data);	
+		//console.log("==========");
+		//console.log("Received character_position", JSON.stringify(data));
+		//emit_broadcast(data.room_name, 'character_position_response', data);	
+		listener.sockets.in(data.room_name).emit('character_position_response', data);
     });
 
 	// En cas de problème
@@ -200,8 +201,7 @@ listener.sockets.on('connection', function(socket){
         console.log("==========");
         console.log("Received leave_multi_room", JSON.stringify(data));
            console.log("To implement"); 
-    });
-    
+    });    
 });
 
 function emit(socket, title, message) {
