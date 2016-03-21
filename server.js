@@ -510,10 +510,9 @@ function delete_room_solo(data, socket){
                 console.log('Deleting the room');
                 db.collection('Room').remove( { "room_name": data.room_name } );
                 console.log('Room deleted');
-                emit(socket, 'response_quit', { 'error_code' : 0, "msg" : "Room deleted successfully"});
             }
             if (!found) {
-                emit(socket, 'response_quit', { 'error_code' : 1, "msg" : "Room not found"});
+                console.log('Room not found');
             }
             db.close();
         });
