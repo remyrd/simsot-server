@@ -181,15 +181,18 @@ listener.sockets.on('connection', function(socket){
 		listener.sockets.in(data.room_name).emit('character_position_response', data);
     });
 
+    /*** User data distribution on the room ***/
+    socket.on('pellet_taken', function(data){
+		console.log("==========");
+		console.log("Received pellet_taken", JSON.stringify(data));
+		emit_broadcast(data.room_name, 'pellet_taken_response', data);	
+    });
+
 	// En cas de problème
 	socket.on('error', function (err) { 
 		console.error(err.stack); 
 		//socket.destroy(); // end/disconnect/close/destroy ?
 	});
-
-    socket.on('pellet', function(data){
-        emit_broadcast(data.room_name, 'pellet', data)
-    });
 
     socket.on('leave_solo_room', function(data){
         console.log("==========");
@@ -200,7 +203,7 @@ listener.sockets.on('connection', function(socket){
     socket.on('leave_multi_room', function(data){
         console.log("==========");
         console.log("Received leave_multi_room", JSON.stringify(data));
-           console.log("To implement"); 
+        console.log("To implement"); 
     });    
 });
 
