@@ -79,12 +79,6 @@ server.listen(port, function() {
 var listener = io.listen(server);
 listener.sockets.on('connection', function(socket){
 
-	var socketPacManJson;
-	var socketBlinkyJson;
-	var socketClydeJson;
-	var socketInkyJson;
-	var socketPinkyJson;
-
     socket.on('subscribe', function(data){
 		console.log("==========");
 		console.log("Received subscribe", JSON.stringify(data));
@@ -181,9 +175,10 @@ listener.sockets.on('connection', function(socket){
 
     /*** User data distribution on the room ***/
     socket.on('character_position', function(data){
-		console.log("==========");
-		console.log("Received character_position", JSON.stringify(data));
-		character_position(data, socket);	
+		//console.log("==========");
+		//console.log("Received character_position", JSON.stringify(data));
+		//emit_broadcast(data.room_name, 'character_position_response', data);	
+		listener.sockets.in(data.room_name).emit('character_position_response', data);
     });
 
     /*** User data distribution on the room ***/
@@ -546,28 +541,5 @@ function set_room_invisible(data){
             db.close();
         });
     });
-}
-
-function character_position(data, socket){
-	console.log("cp");
-	console.log(data.character);
-	if (data.character == "Pacman") {
-		var jsonarray = [];
-		jsonarray.push(data);
-		jsonarray.push(socketBlinkyJson);
-		jsonarray.push(socketClydeJson);
-		jsonarray.push(socketInkyJson);
-		jsonarray.push(socketPinkyJson);
-		
-		emit_broadcast(data.room_name, 'character_position_response', jsonarray);
-	} else if (data.character == "Blinky") {
-		socketBlinkyJson = data;
-	} else if (data.character == "Clyde") {
-		socketClydeJson = data;
-	} else if (data.character == "Inky") {
-		socketInkyJson = data;
-	} else if (data.character == "Pinky") {
-		socketPinkyJson = data;
-	}
 }
 
