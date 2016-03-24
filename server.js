@@ -175,10 +175,9 @@ listener.sockets.on('connection', function(socket){
 
     /*** User data distribution on the room ***/
     socket.on('character_position', function(data){
-		//console.log("==========");
-		//console.log("Received character_position", JSON.stringify(data));
-		//emit_broadcast(data.room_name, 'character_position_response', data);	
-		listener.sockets.in(data.room_name).emit('character_position_response', data);
+		console.log("==========");
+		console.log("Received character_position", JSON.stringify(data));
+		emit_broadcast(data.room_name, 'character_position_response', data);	
     });
 
     /*** User data distribution on the room ***/
